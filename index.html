@@ -1,6 +1,21 @@
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>A&amp;J的旅行</title>
+
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#5f9bb0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="A&amp;J旅行">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js").catch(function(){}); });
+  }
+</script>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -971,15 +986,14 @@
   import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
   /* ⬇⬇⬇ ① 把這一整段換成你的 Firebase 設定（Firebase 主控台 → 專案設定 → 你的應用程式 → SDK 設定與配置） ⬇⬇⬇ */
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyD5D8JjgOSFWZCasxFn4Fh-q500zJbQmmU",
-  authDomain: "ajtravel-c7267.firebaseapp.com",
-  projectId: "ajtravel-c7267",
-  storageBucket: "ajtravel-c7267.firebasestorage.app",
-  messagingSenderId: "579993220776",
-  appId: "1:579993220776:web:7c0209c6c0667af47eb49d"
-};
+  const firebaseConfig = {
+    apiKey: "AIzaSyD5D8JjgOSFWZCasxFn4Fh-q500zJbQmmU",
+    authDomain: "ajtravel-c7267.firebaseapp.com",
+    projectId: "ajtravel-c7267",
+    storageBucket: "ajtravel-c7267.firebasestorage.app",
+    messagingSenderId: "579993220776",
+    appId: "1:579993220776:web:7c0209c6c0667af47eb49d"
+  };
   /* ⬇⬇⬇ ② 把這裡換成你跟女友的 Google email（全部小寫） ⬇⬇⬇ */
   const ALLOWED = ["tcwjustin86@gmail.com", "nancy92055@gmail.com"];
   /* ⬆⬆⬆ 只需要改上面這兩塊，其他都不用動 ⬆⬆⬆ */
