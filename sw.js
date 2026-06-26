@@ -1,4 +1,4 @@
-const CACHE = "aj-travel-v1";
+const CACHE = "aj-travel-v2";
 const ASSETS = [
   "./",
   "./index.html",
