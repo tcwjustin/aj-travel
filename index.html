@@ -205,7 +205,7 @@
   .cal-nav:hover{background:#e7eff0}
   .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
   .cal-wd{text-align:center;font-size:11px;color:var(--ink-soft);padding:3px 0;font-weight:700}
-  .cal-cell{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--ink);border-radius:10px;cursor:pointer;user-select:none}
+  .cal-cell{height:40px;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--ink);border-radius:10px;cursor:pointer;user-select:none}
   .cal-cell.empty{cursor:default}
   .cal-cell.day:hover{background:#eef5f6}
   .cal-cell.inrange{background:#e3eef0;border-radius:0}
@@ -1328,23 +1328,45 @@
     $("wCountry").value=country||""; $("wRegion").value=region||"";
     $("wResults").innerHTML='<div class="geo-msg">已帶入：'+esc([country,region].filter(Boolean).join("・")||name||"")+' ✓（座標已記錄，會出現在地圖上）</div>';
   }
+  var wReadySvc=null, wPlacesSvc=null, wSearchTimer=null;
   async function initWishAutocomplete(){
     if(wReady || !window.gmReady || !window.google || !google.maps.places) return;
     try{
+      wReadySvc=new google.maps.places.AutocompleteService();
+      wPlacesSvc=new google.maps.places.PlacesService(document.createElement("div"));
       $("wSearchHost").style.display="none";
       $("wSearch").style.display="";
-      var ac=new google.maps.places.Autocomplete($("wSearch"),{fields:["name","geometry","address_components"]});
-      ac.addListener("place_changed",function(){
-        var p=ac.getPlace(); if(!p||!p.geometry||!p.geometry.location){ $("wResults").innerHTML='<div class="geo-msg">請從下拉選單點一個地點 🙏</div>'; return; }
-        var country="", region="";
-        (p.address_components||[]).forEach(function(c){
-          if(c.types.indexOf("country")>=0) country=c.long_name;
-          if(!region && (c.types.indexOf("locality")>=0 || c.types.indexOf("administrative_area_level_1")>=0)) region=c.long_name;
-        });
-        fillWishFrom(p.name||$("wSearch").value, country, region, p.geometry.location.lat(), p.geometry.location.lng());
-      });
+      $("wSearch").addEventListener("input", onWishType);
       wReady=true;
-    }catch(e){ $("wResults").innerHTML='<div class="geo-msg">搜尋元件載入失敗，可直接手動輸入名稱／國家／城市 🙏</div>'; }
+    }catch(e){ $("wResults").innerHTML='<div class="geo-msg">搜尋載入失敗，可直接手動輸入名稱／國家／城市 🙏</div>'; }
+  }
+  function onWishType(){
+    var q=$("wSearch").value.trim();
+    clearTimeout(wSearchTimer);
+    if(q.length<2){ $("wResults").innerHTML=""; return; }
+    wSearchTimer=setTimeout(function(){
+      wReadySvc.getPlacePredictions({input:q, language:"zh-TW"}, function(preds,status){
+        if(status!==google.maps.places.PlacesServiceStatus.OK || !preds || !preds.length){ $("wResults").innerHTML='<div class="geo-msg">找不到結果，可直接手動輸入 🙏</div>'; return; }
+        $("wResults").innerHTML=preds.slice(0,5).map(function(p){
+          var main=(p.structured_formatting&&p.structured_formatting.main_text)||p.description;
+          return '<div class="geo-item" data-pid="'+p.place_id+'"><b>'+esc(main)+'</b><small>'+esc(p.description)+'</small></div>';
+        }).join("");
+        $("wResults").querySelectorAll("[data-pid]").forEach(function(it){ it.addEventListener("click",function(){ pickWishPlace(it.getAttribute("data-pid")); }); });
+      });
+    },350);
+  }
+  function pickWishPlace(pid){
+    $("wResults").innerHTML='<div class="geo-msg">讀取地點中…</div>';
+    wPlacesSvc.getDetails({placeId:pid, fields:["name","geometry","address_components"]}, function(place,status){
+      if(status!==google.maps.places.PlacesServiceStatus.OK || !place || !place.geometry){ $("wResults").innerHTML='<div class="geo-msg">讀取失敗，可手動輸入 🙏</div>'; return; }
+      var country="", region="";
+      (place.address_components||[]).forEach(function(c){
+        if(c.types.indexOf("country")>=0) country=c.long_name;
+        if(!region && (c.types.indexOf("locality")>=0 || c.types.indexOf("administrative_area_level_1")>=0)) region=c.long_name;
+      });
+      $("wSearch").value=place.name||"";
+      fillWishFrom(place.name||"", country, region, place.geometry.location.lat(), place.geometry.location.lng());
+    });
   }
   function openWishModal(){
     $("wTitle").value=""; $("wCountry").value=""; $("wRegion").value=""; $("wNote").value=""; $("wResults").innerHTML=""; wLat=wLng=null;
