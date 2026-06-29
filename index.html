@@ -197,6 +197,22 @@
   .date-range input[type=date]{flex:1;min-width:0}
   .dr-arrow{color:var(--ink-soft);font-size:16px}
   .modal-hint{font-size:12px;color:var(--ink-soft);margin:8px 0 0;line-height:1.6}
+  .cal-summary{font-size:13px;color:var(--terra-deep);background:#eef5f6;border-radius:12px;padding:8px 12px;margin:4px 0 8px;font-weight:500}
+  .cal{background:#fff;border:1.5px solid #efe6d6;border-radius:18px;padding:12px}
+  .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+  .cal-title{font-family:var(--hand);font-weight:700;font-size:18px;color:var(--ink)}
+  .cal-nav{border:none;background:#f3efe6;color:var(--terra-deep);width:30px;height:30px;border-radius:50%;font-size:18px;cursor:pointer;line-height:1}
+  .cal-nav:hover{background:#e7eff0}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+  .cal-wd{text-align:center;font-size:11px;color:var(--ink-soft);padding:3px 0;font-weight:700}
+  .cal-cell{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--ink);border-radius:10px;cursor:pointer;user-select:none}
+  .cal-cell.empty{cursor:default}
+  .cal-cell.day:hover{background:#eef5f6}
+  .cal-cell.inrange{background:#e3eef0;border-radius:0}
+  .cal-cell.sel{background:var(--terra);color:#fff;font-weight:700}
+  .cal-cell.sel.start{border-radius:11px 0 0 11px}
+  .cal-cell.sel.end{border-radius:0 11px 11px 0}
+  .cal-cell.sel.single{border-radius:11px}
   .day-del{margin-left:auto;background:none;border:none;color:#cbb89c;cursor:pointer;font-size:13px;line-height:1;padding:3px 7px;border-radius:9px;align-self:center}
   .day-del:hover{background:rgba(224,138,134,.16);color:var(--rose)}
   .pac-host{margin:2px 0 0}
@@ -316,7 +332,7 @@
   <div class="foot">A&amp;J ・ 把每一段旅行，都收進這裡 <span style="color:var(--rose)">❤</span></div>
 </div>
 
-<button class="fab" id="fab">＋ 新增回憶</button>
+<button class="fab" id="fab" style="display:none">＋ 新增回憶</button>
 <div class="toast" id="toast"></div>
 
 <!-- memory modal -->
@@ -379,13 +395,10 @@
     <h2>新增一個旅程</h2>
     <label>旅程名稱</label>
     <input type="text" id="tripName" placeholder="例如：北海道冬季之旅">
-    <label style="margin-top:12px">出發日 ～ 回程日（選了就自動排好每一天）</label>
-    <div class="date-range">
-      <input type="date" id="tripStart">
-      <span class="dr-arrow">→</span>
-      <input type="date" id="tripEnd">
-    </div>
-    <p class="modal-hint">不確定日期也沒關係，留空就先給一天，之後可再加。</p>
+    <label style="margin-top:12px">出發日 ～ 回程日（在月曆上點開始日，再點結束日）</label>
+    <div class="cal-summary" id="tripCalSummary">尚未選擇</div>
+    <div class="cal" id="tripCal"></div>
+    <p class="modal-hint">只點一天＝當天來回；不選日期＝先給一天，之後可再加。</p>
     <div class="modal-actions">
       <button class="btn cancel" id="tripCancel">取消</button>
       <button class="btn save" id="tripSave">建立旅程</button>
@@ -499,6 +512,44 @@
     var days=[], n=1, cur=new Date(sd+"T00:00:00"), end=new Date(ed+"T00:00:00"), guard=0;
     while(cur<=end && guard<90){ days.push({n:n,date:fmtISO(cur),theme:""}); cur.setDate(cur.getDate()+1); n++; guard++; }
     return days.length?days:[{n:1,date:"",theme:""}];
+  }
+  var calStart=null, calEnd=null, calY, calM;
+  function openTripCal(){ calStart=null; calEnd=null; var now=new Date(); calY=now.getFullYear(); calM=now.getMonth(); renderCal(); }
+  function renderCal(){
+    var el=$("tripCal"); if(!el) return;
+    var startDow=new Date(calY,calM,1).getDay();
+    var dim=new Date(calY,calM+1,0).getDate();
+    var html='<div class="cal-head"><button type="button" class="cal-nav" data-cal="prev">‹</button>'+
+      '<span class="cal-title">'+calY+'年 '+(calM+1)+'月</span>'+
+      '<button type="button" class="cal-nav" data-cal="next">›</button></div><div class="cal-grid">';
+    ["日","一","二","三","四","五","六"].forEach(function(w){ html+='<div class="cal-wd">'+w+'</div>'; });
+    for(var i=0;i<startDow;i++){ html+='<div class="cal-cell empty"></div>'; }
+    for(var d=1;d<=dim;d++){
+      var iso=calY+"-"+("0"+(calM+1)).slice(-2)+"-"+("0"+d).slice(-2);
+      var cls="cal-cell day";
+      if(calStart&&calEnd&&iso>calStart&&iso<calEnd) cls+=" inrange";
+      if(calStart&&iso===calStart){ cls+=" sel "+(calEnd?"start":"single"); }
+      if(calEnd&&iso===calEnd) cls+=" sel end";
+      html+='<div class="'+cls+'" data-iso="'+iso+'">'+d+'</div>';
+    }
+    html+="</div>";
+    el.innerHTML=html;
+    el.querySelectorAll("[data-cal]").forEach(function(b){ b.addEventListener("click",function(){ if(b.getAttribute("data-cal")==="prev"){ calM--; if(calM<0){calM=11;calY--;} } else { calM++; if(calM>11){calM=0;calY++;} } renderCal(); }); });
+    el.querySelectorAll("[data-iso]").forEach(function(c){ c.addEventListener("click",function(){ pickCalDay(c.getAttribute("data-iso")); }); });
+    updateCalSummary();
+  }
+  function pickCalDay(iso){
+    if(!calStart || (calStart&&calEnd)){ calStart=iso; calEnd=null; }
+    else if(iso<calStart){ calStart=iso; calEnd=null; }
+    else { calEnd=iso; }
+    renderCal();
+  }
+  function updateCalSummary(){
+    var el=$("tripCalSummary"); if(!el) return;
+    if(!calStart){ el.textContent="尚未選擇（可不選，先給一天）"; return; }
+    if(!calEnd){ el.textContent=fmtDate(calStart)+"（當天來回）"; return; }
+    var n=Math.round((new Date(calEnd)-new Date(calStart))/86400000)+1;
+    el.textContent=fmtDate(calStart)+" ～ "+fmtDate(calEnd)+" ・ 共 "+n+" 天";
   }
 
   /* ---------- itinerary (你們的關西七日) ---------- */
@@ -887,7 +938,7 @@
   }
   function bindTripBar(){
     document.querySelectorAll('[data-trip]').forEach(function(c){ c.addEventListener("click",function(){ currentTripId=c.getAttribute("data-trip"); renderTrips(); }); });
-    var nt=$("newTrip"); if(nt) nt.addEventListener("click",function(){ $("tripName").value=""; if($("tripStart"))$("tripStart").value=""; if($("tripEnd"))$("tripEnd").value=""; $("tripOverlay").classList.add("show"); });
+    var nt=$("newTrip"); if(nt) nt.addEventListener("click",function(){ $("tripName").value=""; openTripCal(); $("tripOverlay").classList.add("show"); });
   }
   async function completeTrip(trip){
     var added=0;
@@ -1141,7 +1192,7 @@
   $("tripCancel").addEventListener("click",function(){$("tripOverlay").classList.remove("show");});
   $("tripSave").addEventListener("click",async function(){
     var n=$("tripName").value.trim(); if(!n){$("tripName").focus();return;}
-    var sd=$("tripStart")?$("tripStart").value:"", ed=$("tripEnd")?$("tripEnd").value:"";
+    var sd=calStart||"", ed=calEnd||calStart||"";
     var t={id:uid(), name:n, days:buildDaysFromRange(sd,ed), stops:[]};
     trips.push(t); currentTripId=t.id;
     await saveTrips(); $("tripOverlay").classList.remove("show"); renderTrips();
@@ -1278,34 +1329,7 @@
     $("wResults").innerHTML='<div class="geo-msg">已帶入：'+esc([country,region].filter(Boolean).join("・")||name||"")+' ✓（座標已記錄，會出現在地圖上）</div>';
   }
   async function initWishAutocomplete(){
-    if(wReady || !window.gmReady || !window.google || !google.maps) return;
-    // 先試 Places API (New) 的新版元件
-    try{
-      var lib = await google.maps.importLibrary("places");
-      var El = lib && lib.PlaceAutocompleteElement;
-      if(!El) throw new Error("no new element");
-      var pac = new El();
-      try{ pac.setAttribute("requested-language","zh-TW"); pac.setAttribute("requested-region","TW"); }catch(e){}
-      pac.style.width="100%";
-      var host=$("wSearchHost"); host.style.display=""; host.innerHTML=""; host.appendChild(pac);
-      $("wSearch").style.display="none";
-      pac.addEventListener("gmp-select", async function(ev){
-        try{
-          var place = ev.placePrediction.toPlace();
-          await place.fetchFields({ fields:["displayName","formattedAddress","location","addressComponents"] });
-          var country="", region="";
-          (place.addressComponents||[]).forEach(function(c){
-            var ty=c.types||[];
-            if(ty.indexOf("country")>=0) country=c.longText||c.shortText||"";
-            if(!region && (ty.indexOf("locality")>=0 || ty.indexOf("administrative_area_level_1")>=0)) region=c.longText||c.shortText||"";
-          });
-          var lat=place.location?place.location.lat():null, lng=place.location?place.location.lng():null;
-          fillWishFrom(place.displayName||"", country, region, lat, lng);
-        }catch(err){ $("wResults").innerHTML='<div class="geo-msg">讀取地點資料失敗，可手動輸入 🙏</div>'; }
-      });
-      wReady=true; return;
-    }catch(e){ /* 落到舊版 */ }
-    // 後備：舊版 Autocomplete（萬一新版元件還沒就緒，至少還能搜）
+    if(wReady || !window.gmReady || !window.google || !google.maps.places) return;
     try{
       $("wSearchHost").style.display="none";
       $("wSearch").style.display="";
@@ -1320,11 +1344,13 @@
         fillWishFrom(p.name||$("wSearch").value, country, region, p.geometry.location.lat(), p.geometry.location.lng());
       });
       wReady=true;
-    }catch(e2){ $("wResults").innerHTML='<div class="geo-msg">搜尋元件載入失敗，可直接手動輸入名稱／國家／城市 🙏</div>'; }
+    }catch(e){ $("wResults").innerHTML='<div class="geo-msg">搜尋元件載入失敗，可直接手動輸入名稱／國家／城市 🙏</div>'; }
   }
   function openWishModal(){
     $("wTitle").value=""; $("wCountry").value=""; $("wRegion").value=""; $("wNote").value=""; $("wResults").innerHTML=""; wLat=wLng=null;
     if($("wSearch")) $("wSearch").value="";
+    if($("wSearchHost")) $("wSearchHost").style.display="none";
+    if($("wSearch")) $("wSearch").style.display="";
     $("wishOverlay").classList.add("show");
     if(window.gmReady) initWishAutocomplete();
     else $("wResults").innerHTML='<div class="geo-msg">地圖搜尋載入中…（沒反應的話可直接手動輸入）</div>';
