@@ -193,6 +193,25 @@
   .empty .big{font-family:var(--hand);font-size:25px;font-weight:700;color:var(--terra-deep)}
   .empty p{font-size:14px;margin:9px 0 0;line-height:1.75}
   .foot{text-align:center;color:var(--ink-soft);font-family:var(--hand);font-size:18px;font-weight:500;padding:18px 20px 34px;opacity:.9}
+  .date-range{display:flex;align-items:center;gap:8px}
+  .date-range input[type=date]{flex:1;min-width:0}
+  .dr-arrow{color:var(--ink-soft);font-size:16px}
+  .modal-hint{font-size:12px;color:var(--ink-soft);margin:8px 0 0;line-height:1.6}
+  .day-del{margin-left:auto;background:none;border:none;color:#cbb89c;cursor:pointer;font-size:13px;line-height:1;padding:3px 7px;border-radius:9px;align-self:center}
+  .day-del:hover{background:rgba(224,138,134,.16);color:var(--rose)}
+  .pac-host{margin:2px 0 0}
+  .pac-host gmp-place-autocomplete{width:100%}
+  .day-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:4px 0 10px}
+  .dt-start{font-size:13px;color:var(--ink-soft);display:flex;align-items:center;gap:5px}
+  .dt-start input[type=time]{font-family:var(--body);font-size:13px;border:1.5px solid #efe6d6;border-radius:10px;padding:5px 8px;background:#fff;color:var(--ink)}
+  .dt-mode,.dt-opt{font-family:var(--body);font-weight:700;font-size:13px;border:none;cursor:pointer;border-radius:12px;padding:7px 12px}
+  .dt-mode{background:#eef5f6;color:var(--terra-deep)}
+  .dt-mode:hover{background:#e2eef0}
+  .dt-opt{background:var(--terra);color:#fff;box-shadow:0 3px 10px rgba(95,155,176,.3)}
+  .dt-opt:hover{filter:brightness(1.05)}
+  .dt-opt:disabled{opacity:.6;cursor:default}
+  .itin-row[data-editstop]{cursor:pointer}
+  .leg-chip{font-size:12px;color:var(--terra-deep);background:#eef5f6;border-radius:20px;padding:3px 11px;margin:3px 0 3px 34px;display:inline-block;font-weight:500}
 
   .fab{position:fixed;right:22px;bottom:22px;z-index:50;background:var(--terra);color:#fff;border:none;cursor:pointer;border-radius:50px;padding:14px 22px;font-family:var(--body);font-weight:700;font-size:15px;box-shadow:0 8px 22px rgba(95,155,176,.45);display:flex;align-items:center;gap:8px;transition:transform .12s}
   .fab:hover{transform:translateY(-2px)}
@@ -333,8 +352,9 @@
   <div class="modal">
     <h2>新增想去的地方</h2>
     <label>搜尋地點（打字後從下拉選單點一個，自動帶入）</label>
+    <div id="wSearchHost" class="pac-host"></div>
     <div class="geo-search">
-      <input type="text" id="wSearch" placeholder="例如：富良野 / 清水寺 / Eiffel Tower" autocomplete="off">
+      <input type="text" id="wSearch" placeholder="例如：富良野 / 清水寺 / Eiffel Tower" autocomplete="off" style="display:none">
     </div>
     <div class="geo-results" id="wResults"></div>
     <label>國家</label>
@@ -359,6 +379,13 @@
     <h2>新增一個旅程</h2>
     <label>旅程名稱</label>
     <input type="text" id="tripName" placeholder="例如：北海道冬季之旅">
+    <label style="margin-top:12px">出發日 ～ 回程日（選了就自動排好每一天）</label>
+    <div class="date-range">
+      <input type="date" id="tripStart">
+      <span class="dr-arrow">→</span>
+      <input type="date" id="tripEnd">
+    </div>
+    <p class="modal-hint">不確定日期也沒關係，留空就先給一天，之後可再加。</p>
     <div class="modal-actions">
       <button class="btn cancel" id="tripCancel">取消</button>
       <button class="btn save" id="tripSave">建立旅程</button>
@@ -412,7 +439,7 @@
 
 <script>
   /* ⬇⬇⬇ 把這裡換成你的 Google Maps API 金鑰 ⬇⬇⬇ */
-  window.GMAPS_KEY = "AIzaSyAPmtfJZdKIKiHBnXgd87Hj28Scpq-mUbA";
+  window.GMAPS_KEY = "貼上你的_Google_Maps_API_金鑰";
   /* ⬆⬆⬆ 只要改這一行 ⬆⬆⬆ */
   window.gmReady = false;
   window.__gmReady = function(){ window.gmReady = true; if(window.__onGmReady) window.__onGmReady(); };
@@ -465,6 +492,14 @@
   function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
   function esc(s){return (s||"").replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
   function fmtDate(d){ if(!d) return ""; var p=d.split("-"); return p.length===3 ? p[0]+"年"+(+p[1])+"月"+(+p[2])+"日" : d; }
+  function fmtISO(d){ var m=("0"+(d.getMonth()+1)).slice(-2), day=("0"+d.getDate()).slice(-2); return d.getFullYear()+"-"+m+"-"+day; }
+  function buildDaysFromRange(sd,ed){
+    if(!sd) return [{n:1,date:"",theme:""}];
+    if(!ed||ed<sd) ed=sd;
+    var days=[], n=1, cur=new Date(sd+"T00:00:00"), end=new Date(ed+"T00:00:00"), guard=0;
+    while(cur<=end && guard<90){ days.push({n:n,date:fmtISO(cur),theme:""}); cur.setDate(cur.getDate()+1); n++; guard++; }
+    return days.length?days:[{n:1,date:"",theme:""}];
+  }
 
   /* ---------- itinerary (你們的關西七日) ---------- */
   var ITINERARY=[
@@ -703,6 +738,60 @@
   async function saveTrips(){ await store.set("trips", JSON.stringify(trips)); }
   function curTrip(){ return trips.find(function(t){return t.id===currentTripId;}) || trips[0]; }
 
+  var legCache={};
+  function toMin(t){ if(!t||t.indexOf(":")<0) return null; var p=t.split(":"),h=+p[0],m=+p[1]; if(isNaN(h)||isNaN(m)) return null; return h*60+m; }
+  function toHM(min){ min=((Math.round(min)%1440)+1440)%1440; var h=Math.floor(min/60),m=min%60; return ("0"+h).slice(-2)+":"+("0"+m).slice(-2); }
+  function hav(a,b){ var R=6371,dLat=(b.lat-a.lat)*Math.PI/180,dLng=(b.lng-a.lng)*Math.PI/180,la1=a.lat*Math.PI/180,la2=b.lat*Math.PI/180; var x=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(la1)*Math.cos(la2)*Math.sin(dLng/2)*Math.sin(dLng/2); return 2*R*Math.asin(Math.sqrt(x)); }
+  function daySorted(t,dayN){
+    return t.stops.filter(function(s){return s.dayN===dayN;}).slice().sort(function(a,b){
+      var ao=(a.order!=null),bo=(b.order!=null);
+      if(ao&&bo) return a.order-b.order;
+      if(ao!==bo) return ao?-1:1;
+      return (a.time||"").localeCompare(b.time||"");
+    });
+  }
+  async function routeLeg(from,to,mode){
+    var key=from.id+"|"+to.id+"|"+mode;
+    if(legCache[key]) return legCache[key];
+    var body={ origin:{location:{latLng:{latitude:from.lat,longitude:from.lng}}}, destination:{location:{latLng:{latitude:to.lat,longitude:to.lng}}}, travelMode:mode };
+    if(mode==="DRIVE") body.routingPreference="TRAFFIC_AWARE";
+    var res=await fetch("https://routes.googleapis.com/directions/v2:computeRoutes",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","X-Goog-Api-Key":window.GMAPS_KEY,"X-Goog-FieldMask":"routes.duration,routes.distanceMeters"},
+      body:JSON.stringify(body)
+    });
+    if(!res.ok) throw new Error("routes "+res.status);
+    var data=await res.json();
+    if(!data.routes||!data.routes.length) throw new Error("no route");
+    var sec=parseInt(data.routes[0].duration,10)||0, m=data.routes[0].distanceMeters||0;
+    legCache[key]={min:Math.round(sec/60), km:Math.round(m/100)/10};
+    return legCache[key];
+  }
+  async function optimizeDay(t,dayN){
+    var d=t.days.find(function(x){return x.n===dayN;}); if(!d) return;
+    var mode=d.travelMode||"DRIVE";
+    var seq=daySorted(t,dayN);
+    var locatedIdx=[]; seq.forEach(function(s,i){ if(s.lat!=null) locatedIdx.push(i); });
+    if(locatedIdx.length<2){ toast("這天要有至少 2 個『有地圖座標』的景點才能排順路 🗺️"); return; }
+    var located=locatedIdx.map(function(i){return seq[i];});
+    var ordered=[located[0]], pool=located.slice(1);
+    while(pool.length){ var last=ordered[ordered.length-1],bi=0,bd=Infinity; pool.forEach(function(p,idx){var dd=hav(last,p); if(dd<bd){bd=dd;bi=idx;}}); ordered.push(pool.splice(bi,1)[0]); }
+    locatedIdx.forEach(function(i,k){ seq[i]=ordered[k]; });
+    seq.forEach(function(s,i){ s.order=i+1; });
+    toast("計算交通時間中…"+(mode==="TRANSIT"?"🚆":"🚗"));
+    var ok=true;
+    try{ for(var i=0;i<ordered.length-1;i++){ await routeLeg(ordered[i],ordered[i+1],mode); } }
+    catch(e){ ok=false; }
+    var clock=toMin(d.startTime); if(clock==null) clock=toMin(ordered[0].time); if(clock==null) clock=540;
+    for(var j=0;j<ordered.length;j++){
+      var s=ordered[j], stay=(toMin(s.endTime)!=null&&toMin(s.time)!=null)?(toMin(s.endTime)-toMin(s.time)):60; if(stay<=0||stay>600) stay=60;
+      s.time=toHM(clock); s.endTime=toHM(clock+stay); clock+=stay;
+      if(j<ordered.length-1){ var lg=legCache[ordered[j].id+"|"+ordered[j+1].id+"|"+mode]; if(lg) clock+=lg.min; }
+    }
+    await saveTrips(); renderTrips(); refreshMap();
+    toast(ok?"排好順路＋算好時間了 ✨":"順路排好了，但交通時間查詢失敗：請確認已啟用 Routes API 並加進金鑰白名單 🙏");
+  }
+
   function renderTrips(){
     var el=$("itinerary");
     var bar='<div class="trip-bar">'+trips.map(function(t){
@@ -720,19 +809,31 @@
       '</div>';
 
     detail += days.map(function(d){
-      var stops=t.stops.filter(function(s){return s.dayN===d.n;}).sort(function(a,b){return (a.time||"").localeCompare(b.time||"");});
-      var rows = stops.length ? stops.map(function(s){
-        var hasPlace = (s.lat!=null)||s.region||s.country;
-        var tlabel = s.time ? (s.endTime ? s.time+"–"+s.endTime : s.time) : (s.endTime ? "–"+s.endTime : "");
-        return '<div class="itin-row'+(hasPlace?" is-place":"")+'">'+
-          '<span class="itin-time">'+esc(tlabel)+'</span>'+
-          '<span class="itin-text">'+esc(s.name||"")+(s.note?' <span class="itin-note">· '+esc(s.note)+'</span>':'')+'</span>'+
-          '<button class="stop-del" data-delstop="'+s.id+'" title="刪除">×</button></div>';
-      }).join("") : '<div class="itin-row"><span class="itin-text" style="color:var(--ink-soft)">這天還沒排景點</span></div>';
+      var mode=d.travelMode||"DRIVE";
+      var stops=daySorted(t,d.n);
+      var rows;
+      if(stops.length){
+        rows="";
+        stops.forEach(function(s,i){
+          if(i>0){ var prev=stops[i-1]; if(prev.lat!=null && s.lat!=null){ var lg=legCache[prev.id+"|"+s.id+"|"+mode]; if(lg){ rows+='<div class="leg-chip">'+(mode==="TRANSIT"?"🚆":"🚗")+' 約 '+lg.min+' 分'+(lg.km?' ・ '+lg.km+' km':'')+'</div>'; } } }
+          var hasPlace=(s.lat!=null)||s.region||s.country;
+          var tlabel=s.time?(s.endTime?s.time+"–"+s.endTime:s.time):(s.endTime?"–"+s.endTime:"");
+          rows+='<div class="itin-row'+(hasPlace?" is-place":"")+'" data-editstop="'+s.id+'">'+
+            '<span class="itin-time">'+esc(tlabel)+'</span>'+
+            '<span class="itin-text">'+esc(s.name||"")+(s.note?' <span class="itin-note">· '+esc(s.note)+'</span>':'')+'</span>'+
+            '<button class="stop-del" data-delstop="'+s.id+'" title="刪除">×</button></div>';
+        });
+      } else { rows='<div class="itin-row"><span class="itin-text" style="color:var(--ink-soft)">這天還沒排景點</span></div>'; }
       return '<div class="itin-day">'+
         '<div class="itin-head"><span class="itin-dnum">DAY '+d.n+'</span>'+
-          (d.date?'<span class="itin-date">'+(+d.date.slice(5,7))+'/'+(+d.date.slice(8))+'</span>':'')+'</div>'+
+          (d.date?'<span class="itin-date">'+(+d.date.slice(5,7))+'/'+(+d.date.slice(8))+'</span>':'')+
+          (days.length>1?'<button class="day-del" data-delday="'+d.n+'" title="刪除這天">✕</button>':'')+'</div>'+
         '<div class="itin-theme" contenteditable="true" spellcheck="false" data-eday="'+d.n+'">'+esc(d.theme||"（點這裡寫今天主題）")+'</div>'+
+        '<div class="day-tools">'+
+          '<label class="dt-start">出發 <input type="time" data-starttime="'+d.n+'" value="'+(d.startTime||"")+'"></label>'+
+          '<button class="dt-mode" data-mode="'+d.n+'" title="切換交通方式">'+(mode==="TRANSIT"?"🚆 電車":"🚗 開車")+'</button>'+
+          '<button class="dt-opt" data-opt="'+d.n+'">🪄 排順路＋算時間</button>'+
+        '</div>'+
         rows+
         '<button class="add-link" data-addstop="'+d.n+'">＋ 加景點</button>'+
       '</div>';
@@ -767,12 +868,26 @@
       });
     });
     el.querySelectorAll('[data-addstop]').forEach(function(b){ b.addEventListener("click",function(){ openStop(+b.getAttribute("data-addstop")); }); });
-    var ad=$("addDay"); if(ad) ad.addEventListener("click",function(){ var max=t.days.reduce(function(m,x){return Math.max(m,x.n);},0); t.days.push({n:max+1,date:"",theme:""}); saveTrips(); renderTrips(); });
-    el.querySelectorAll('[data-delstop]').forEach(function(b){ b.addEventListener("click",function(){ t.stops=t.stops.filter(function(s){return s.id!==b.getAttribute("data-delstop");}); saveTrips(); renderTrips(); refreshMap(); }); });
+    var ad=$("addDay"); if(ad) ad.addEventListener("click",function(){ var max=t.days.reduce(function(m,x){return Math.max(m,x.n);},0); var sorted=t.days.slice().sort(function(a,b){return a.n-b.n;}); var last=sorted[sorted.length-1]; var nd=""; if(last&&last.date){ var dd=new Date(last.date+"T00:00:00"); dd.setDate(dd.getDate()+1); nd=fmtISO(dd);} t.days.push({n:max+1,date:nd,theme:""}); saveTrips(); renderTrips(); });
+    el.querySelectorAll('[data-delday]').forEach(function(b){ b.addEventListener("click",function(){ removeDay(t,+b.getAttribute("data-delday")); }); });
+    el.querySelectorAll('[data-delstop]').forEach(function(b){ b.addEventListener("click",function(ev){ ev.stopPropagation(); var sid=b.getAttribute("data-delstop"); var s=t.stops.find(function(x){return x.id===sid;}); if(s) trashItem("stop",{tripId:t.id,tripName:t.name,stop:s}); t.stops=t.stops.filter(function(x){return x.id!==sid;}); saveTrips(); renderTrips(); refreshMap(); }); });
+    el.querySelectorAll('[data-editstop]').forEach(function(r){ r.addEventListener("click",function(ev){ if(ev.target.classList.contains("stop-del")) return; var sid=r.getAttribute("data-editstop"); var s=t.stops.find(function(x){return x.id===sid;}); if(s) openStop(s.dayN,s.id); }); });
+    el.querySelectorAll('[data-mode]').forEach(function(b){ b.addEventListener("click",function(){ var n=+b.getAttribute("data-mode"); var dd=t.days.find(function(x){return x.n===n;}); if(dd){ dd.travelMode=((dd.travelMode||"DRIVE")==="DRIVE")?"TRANSIT":"DRIVE"; saveTrips(); renderTrips(); } }); });
+    el.querySelectorAll('[data-starttime]').forEach(function(inp){ inp.addEventListener("change",function(){ var n=+inp.getAttribute("data-starttime"); var dd=t.days.find(function(x){return x.n===n;}); if(dd){ dd.startTime=inp.value; saveTrips(); } }); });
+    el.querySelectorAll('[data-opt]').forEach(function(b){ b.addEventListener("click",function(){ b.disabled=true; b.textContent="計算中…"; optimizeDay(t,+b.getAttribute("data-opt")); }); });
+  }
+  function removeDay(t,n){
+    if(t.stops.some(function(s){return s.dayN===n;})){ toast("這天還有景點，請先把景點刪掉再刪這天"); return; }
+    var remaining=t.days.filter(function(x){return x.n!==n;}).sort(function(a,b){return a.n-b.n;});
+    if(!remaining.length){ toast("至少要保留一天"); return; }
+    var map={}; remaining.forEach(function(d,i){ map[d.n]=i+1; });
+    t.stops.forEach(function(s){ if(map[s.dayN]) s.dayN=map[s.dayN]; });
+    remaining.forEach(function(d,i){ d.n=i+1; });
+    t.days=remaining; saveTrips(); renderTrips();
   }
   function bindTripBar(){
     document.querySelectorAll('[data-trip]').forEach(function(c){ c.addEventListener("click",function(){ currentTripId=c.getAttribute("data-trip"); renderTrips(); }); });
-    var nt=$("newTrip"); if(nt) nt.addEventListener("click",function(){ $("tripName").value=""; $("tripOverlay").classList.add("show"); });
+    var nt=$("newTrip"); if(nt) nt.addEventListener("click",function(){ $("tripName").value=""; if($("tripStart"))$("tripStart").value=""; if($("tripEnd"))$("tripEnd").value=""; $("tripOverlay").classList.add("show"); });
   }
   async function completeTrip(trip){
     var added=0;
@@ -826,6 +941,7 @@
     else if(r.type==="footprint"){ footprints.push(d); await store.set("footprints",JSON.stringify(footprints)); }
     else if(r.type==="wishlist"){ wishlist.push(d); await store.set("wishlist",JSON.stringify(wishlist)); }
     else if(r.type==="entry"){ await store.set("entry:"+d.id, JSON.stringify(d)); if(!entries.some(function(x){return x.id===d.id;})) entries.push(d); }
+    else if(r.type==="stop"){ var tp=trips.find(function(x){return x.id===d.tripId;}); if(!tp){ toast("原本的旅程已不在，請先還原旅程"); return; } if(!tp.stops.some(function(x){return x.id===d.stop.id;})) tp.stops.push(d.stop); await saveTrips(); }
     trash.splice(i,1); await saveTrash();
     toast("已還原 ✅"); renderAll(); renderTrash();
   }
@@ -835,13 +951,14 @@
     trash.splice(i,1); await saveTrash();
     updateTrashBadge(); renderTrash();
   }
-  function typeLabel(t){ return ({trip:"🧳 旅程",entry:"📷 回憶",footprint:"👣 足跡",wishlist:"⭐ 想去"})[t]||t; }
+  function typeLabel(t){ return ({trip:"🧳 旅程",entry:"📷 回憶",footprint:"👣 足跡",wishlist:"⭐ 想去",stop:"📍 景點"})[t]||t; }
   function trashTitle(r){
     var d=r.data||{};
     if(r.type==="trip") return d.name||"未命名旅程";
     if(r.type==="entry") return d.title||"無題";
     if(r.type==="footprint") return d.title||d.place||"足跡";
     if(r.type==="wishlist") return d.title||"想去的地方";
+    if(r.type==="stop") return ((d.stop&&(d.stop.name||d.stop.region))||"景點")+(d.tripName?(" · "+d.tripName):"");
     return "項目";
   }
   function updateTrashBadge(){
@@ -1024,15 +1141,19 @@
   $("tripCancel").addEventListener("click",function(){$("tripOverlay").classList.remove("show");});
   $("tripSave").addEventListener("click",async function(){
     var n=$("tripName").value.trim(); if(!n){$("tripName").focus();return;}
-    var t={id:uid(), name:n, days:[{n:1,date:"",theme:""}], stops:[]};
+    var sd=$("tripStart")?$("tripStart").value:"", ed=$("tripEnd")?$("tripEnd").value:"";
+    var t={id:uid(), name:n, days:buildDaysFromRange(sd,ed), stops:[]};
     trips.push(t); currentTripId=t.id;
     await saveTrips(); $("tripOverlay").classList.remove("show"); renderTrips();
   });
 
-  var stopWishMap={}, stopPickCoords=null;
-  function openStop(dayN){
+  var stopWishMap={}, stopPickCoords=null, editingStopId=null;
+  function openStop(dayN, stopId){
     var t=curTrip(); if(!t) return;
-    stopPickCoords=null;
+    editingStopId = stopId || null;
+    var ex = stopId ? t.stops.find(function(x){return x.id===stopId;}) : null;
+    if(ex) dayN = ex.dayN;
+    stopPickCoords = (ex && ex.lat!=null) ? {lat:ex.lat,lng:ex.lng} : null;
     // day select
     $("stopDay").innerHTML = t.days.slice().sort(function(a,b){return a.n-b.n;}).map(function(d){
       return '<option value="'+d.n+'"'+(d.n===dayN?" selected":"")+'>DAY '+d.n+(d.theme?'・'+esc(d.theme):'')+'</option>';
@@ -1046,24 +1167,31 @@
       byC[c].forEach(function(w){ stopWishMap[w.id]=w; opts+='<option value="'+w.id+'">'+(w.region?esc(w.region)+'・':'')+esc(w.title)+'</option>'; });
       opts+='</optgroup>';
     });
-    $("stopWish").innerHTML=opts;
-    $("stopTime").value=""; $("stopEnd").value=""; $("stopName").value=""; $("stopCountry").value=""; $("stopRegion").value=""; $("stopNote").value="";
+    $("stopWish").innerHTML=opts; $("stopWish").value="";
+    $("stopTime").value=ex?(ex.time||""):""; $("stopEnd").value=ex?(ex.endTime||""):"";
+    $("stopName").value=ex?(ex.name||""):""; $("stopCountry").value=ex?(ex.country||""):""; $("stopRegion").value=ex?(ex.region||""):""; $("stopNote").value=ex?(ex.note||""):"";
+    $("stopSave").textContent = ex ? "儲存修改" : "加進行程";
     $("stopOverlay").classList.add("show");
   }
   $("stopWish").addEventListener("change",function(){
     var w=stopWishMap[$("stopWish").value];
     if(w){ $("stopName").value=w.title||""; $("stopCountry").value=w.country||""; $("stopRegion").value=w.region||""; if(w.note&&!$("stopNote").value)$("stopNote").value=w.note;
       stopPickCoords=(w.lat!=null)?{lat:w.lat,lng:w.lng}:null; }
-    else { stopPickCoords=null; }
   });
-  $("stopCancel").addEventListener("click",function(){$("stopOverlay").classList.remove("show");});
+  $("stopCancel").addEventListener("click",function(){ editingStopId=null; $("stopOverlay").classList.remove("show"); });
   $("stopSave").addEventListener("click",async function(){
     var nm=$("stopName").value.trim(); if(!nm){$("stopName").focus();return;}
     var t=curTrip(); if(!t) return;
-    t.stops.push({ id:uid(), dayN:+$("stopDay").value, time:$("stopTime").value.trim(), endTime:$("stopEnd").value.trim(),
-      name:nm, country:$("stopCountry").value.trim(), region:$("stopRegion").value.trim(),
-      note:$("stopNote").value.trim(),
-      lat:stopPickCoords?stopPickCoords.lat:null, lng:stopPickCoords?stopPickCoords.lng:null });
+    if(editingStopId){
+      var s=t.stops.find(function(x){return x.id===editingStopId;});
+      if(s){ s.dayN=+$("stopDay").value; s.time=$("stopTime").value.trim(); s.endTime=$("stopEnd").value.trim(); s.name=nm; s.country=$("stopCountry").value.trim(); s.region=$("stopRegion").value.trim(); s.note=$("stopNote").value.trim(); if(stopPickCoords){ s.lat=stopPickCoords.lat; s.lng=stopPickCoords.lng; } }
+      editingStopId=null;
+    } else {
+      t.stops.push({ id:uid(), dayN:+$("stopDay").value, time:$("stopTime").value.trim(), endTime:$("stopEnd").value.trim(),
+        name:nm, country:$("stopCountry").value.trim(), region:$("stopRegion").value.trim(),
+        note:$("stopNote").value.trim(),
+        lat:stopPickCoords?stopPickCoords.lat:null, lng:stopPickCoords?stopPickCoords.lng:null });
+    }
     await saveTrips(); $("stopOverlay").classList.remove("show"); renderTrips(); refreshMap();
   });
   ["tripOverlay","stopOverlay"].forEach(function(o){
@@ -1142,30 +1270,61 @@
   });
 
   /* ---------- wishlist ---------- */
-  var wLat=null, wLng=null;
-  function initWishAutocomplete(){
-    if(!window.gmReady || wAutocomplete || !window.google || !google.maps.places) return;
-    wAutocomplete = new google.maps.places.Autocomplete($("wSearch"), {
-      fields:["name","geometry","address_components","formatted_address"]
-    });
-    wAutocomplete.addListener("place_changed", function(){
-      var p = wAutocomplete.getPlace();
-      if(!p || !p.geometry || !p.geometry.location){
-        $("wResults").innerHTML='<div class="geo-msg">請從下拉選單點一個地點 🙏</div>'; return;
-      }
-      wLat = p.geometry.location.lat(); wLng = p.geometry.location.lng();
-      $("wTitle").value = p.name || $("wSearch").value;
-      var country="", region="";
-      (p.address_components||[]).forEach(function(c){
-        if(c.types.indexOf("country")>=0) country=c.long_name;
-        if(!region && (c.types.indexOf("locality")>=0 || c.types.indexOf("administrative_area_level_1")>=0)) region=c.long_name;
+  var wLat=null, wLng=null, wReady=false;
+  function fillWishFrom(name,country,region,lat,lng){
+    wLat=(lat==null?null:lat); wLng=(lng==null?null:lng);
+    if(name) $("wTitle").value=name;
+    $("wCountry").value=country||""; $("wRegion").value=region||"";
+    $("wResults").innerHTML='<div class="geo-msg">已帶入：'+esc([country,region].filter(Boolean).join("・")||name||"")+' ✓（座標已記錄，會出現在地圖上）</div>';
+  }
+  async function initWishAutocomplete(){
+    if(wReady || !window.gmReady || !window.google || !google.maps) return;
+    // 先試 Places API (New) 的新版元件
+    try{
+      var lib = await google.maps.importLibrary("places");
+      var El = lib && lib.PlaceAutocompleteElement;
+      if(!El) throw new Error("no new element");
+      var pac = new El();
+      try{ pac.setAttribute("requested-language","zh-TW"); pac.setAttribute("requested-region","TW"); }catch(e){}
+      pac.style.width="100%";
+      var host=$("wSearchHost"); host.style.display=""; host.innerHTML=""; host.appendChild(pac);
+      $("wSearch").style.display="none";
+      pac.addEventListener("gmp-select", async function(ev){
+        try{
+          var place = ev.placePrediction.toPlace();
+          await place.fetchFields({ fields:["displayName","formattedAddress","location","addressComponents"] });
+          var country="", region="";
+          (place.addressComponents||[]).forEach(function(c){
+            var ty=c.types||[];
+            if(ty.indexOf("country")>=0) country=c.longText||c.shortText||"";
+            if(!region && (ty.indexOf("locality")>=0 || ty.indexOf("administrative_area_level_1")>=0)) region=c.longText||c.shortText||"";
+          });
+          var lat=place.location?place.location.lat():null, lng=place.location?place.location.lng():null;
+          fillWishFrom(place.displayName||"", country, region, lat, lng);
+        }catch(err){ $("wResults").innerHTML='<div class="geo-msg">讀取地點資料失敗，可手動輸入 🙏</div>'; }
       });
-      $("wCountry").value=country; $("wRegion").value=region;
-      $("wResults").innerHTML='<div class="geo-msg">已帶入：'+esc([country,region].filter(Boolean).join("・"))+' ✓（座標已記錄，會出現在地圖上）</div>';
-    });
+      wReady=true; return;
+    }catch(e){ /* 落到舊版 */ }
+    // 後備：舊版 Autocomplete（萬一新版元件還沒就緒，至少還能搜）
+    try{
+      $("wSearchHost").style.display="none";
+      $("wSearch").style.display="";
+      var ac=new google.maps.places.Autocomplete($("wSearch"),{fields:["name","geometry","address_components"]});
+      ac.addListener("place_changed",function(){
+        var p=ac.getPlace(); if(!p||!p.geometry||!p.geometry.location){ $("wResults").innerHTML='<div class="geo-msg">請從下拉選單點一個地點 🙏</div>'; return; }
+        var country="", region="";
+        (p.address_components||[]).forEach(function(c){
+          if(c.types.indexOf("country")>=0) country=c.long_name;
+          if(!region && (c.types.indexOf("locality")>=0 || c.types.indexOf("administrative_area_level_1")>=0)) region=c.long_name;
+        });
+        fillWishFrom(p.name||$("wSearch").value, country, region, p.geometry.location.lat(), p.geometry.location.lng());
+      });
+      wReady=true;
+    }catch(e2){ $("wResults").innerHTML='<div class="geo-msg">搜尋元件載入失敗，可直接手動輸入名稱／國家／城市 🙏</div>'; }
   }
   function openWishModal(){
-    $("wSearch").value=""; $("wResults").innerHTML=""; $("wTitle").value=""; $("wCountry").value=""; $("wRegion").value=""; $("wNote").value=""; wLat=wLng=null;
+    $("wTitle").value=""; $("wCountry").value=""; $("wRegion").value=""; $("wNote").value=""; $("wResults").innerHTML=""; wLat=wLng=null;
+    if($("wSearch")) $("wSearch").value="";
     $("wishOverlay").classList.add("show");
     if(window.gmReady) initWishAutocomplete();
     else $("wResults").innerHTML='<div class="geo-msg">地圖搜尋載入中…（沒反應的話可直接手動輸入）</div>';
