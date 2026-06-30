@@ -228,6 +228,17 @@
   .dt-opt:disabled{opacity:.6;cursor:default}
   .itin-row[data-editstop]{cursor:pointer}
   .leg-chip{font-size:12px;color:var(--terra-deep);background:#eef5f6;border-radius:20px;padding:3px 11px;margin:3px 0 3px 34px;display:inline-block;font-weight:500}
+  .leg-chip.flight{color:#9a7a2e;background:#f9f0db}
+  .day-stops{min-height:10px}
+  .drag-h{cursor:grab;color:#ccc1aa;font-size:15px;line-height:1;padding:0 2px;touch-action:none;user-select:none}
+  .drag-h:active{cursor:grabbing}
+  .itin-empty-row{color:var(--ink-soft);font-size:13px;padding:8px 0 8px 4px}
+  .sortable-ghost{opacity:.35}
+  .sortable-chosen .itin-row{box-shadow:0 6px 18px rgba(95,155,176,.3);border-radius:12px}
+  .sortable-drag .itin-row{background:#fff}
+  .itin-time[data-edittime]{cursor:pointer;border-radius:6px}
+  .itin-time[data-edittime]:hover{background:rgba(95,155,176,.1)}
+  .t-add{color:var(--terra);font-weight:500;font-size:12px}
 
   .fab{position:fixed;right:22px;bottom:22px;z-index:50;background:var(--terra);color:#fff;border:none;cursor:pointer;border-radius:50px;padding:14px 22px;font-family:var(--body);font-weight:700;font-size:15px;box-shadow:0 8px 22px rgba(95,155,176,.45);display:flex;align-items:center;gap:8px;transition:transform .12s}
   .fab:hover{transform:translateY(-2px)}
@@ -236,7 +247,11 @@
   .overlay.show{display:flex}
   .modal{background:var(--paper-2);border:1px solid var(--kraft-deep);border-radius:20px;max-width:480px;width:100%;padding:24px;box-shadow:0 24px 60px rgba(65,80,90,.28);margin:auto}
 
-  #trashBtn{position:fixed;top:12px;left:14px;z-index:60;background:rgba(255,255,255,.82);border:1px solid #e4e1d8;color:#717784;border-radius:20px;padding:6px 11px;font-size:14px;cursor:pointer;font-family:'Noto Sans TC',sans-serif;display:flex;align-items:center;gap:5px}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+  .foot-links{margin-top:10px;display:flex;align-items:center;justify-content:center}
+  .foot-link{background:none;border:none;color:var(--ink-soft);font-family:var(--body);font-size:13px;cursor:pointer;padding:5px 7px;border-radius:8px;display:inline-flex;align-items:center;gap:4px}
+  .foot-link:hover{color:var(--terra-deep)}
+  #trashBtn{position:static}
   #trashBtn:hover{color:#41505a}
   #trashBadge{display:none;align-items:center;justify-content:center;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:#dd8f8f;color:#fff;font-size:11px;font-weight:700}
   .trash-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
@@ -329,7 +344,12 @@
   </section>
   <section class="panel" id="wish"></section>
 
-  <div class="foot">A&amp;J ・ 把每一段旅行，都收進這裡 <span style="color:var(--rose)">❤</span></div>
+  <div class="foot">A&amp;J ・ 把每一段旅行，都收進這裡 <span style="color:var(--rose)">❤</span>
+    <div class="foot-links">
+      <button id="trashBtn" class="foot-link" onclick="window.__openTrash&&window.__openTrash()">🗑 回收桶<span id="trashBadge"></span></button>
+      <button id="logoutBtn" class="foot-link" onclick="window.fbAuth&&window.fbAuth.signOut()">登出</button>
+    </div>
+  </div>
 </div>
 
 <button class="fab" id="fab" style="display:none">＋ 新增回憶</button>
@@ -412,12 +432,6 @@
     <h2>加一個景點</h2>
     <label>排在第幾天</label>
     <select id="stopDay"></select>
-    <label>時間（開始 → 結束，結束可留空）</label>
-    <div style="display:flex;gap:10px;align-items:center">
-      <input type="time" id="stopTime" style="flex:1">
-      <span style="color:var(--ink-soft);font-weight:800">→</span>
-      <input type="time" id="stopEnd" style="flex:1">
-    </div>
     <label>從想去清單挑（可選）</label>
     <select id="stopWish"></select>
     <label>地點 / 行程</label>
@@ -441,6 +455,22 @@
   <div class="inner" id="lightInner"></div>
 </div>
 
+<div class="overlay" id="timeOverlay">
+  <div class="modal" style="max-width:340px">
+    <h2 id="timeTitle">設定時間</h2>
+    <label>時間（開始 → 結束，結束可留空）</label>
+    <div style="display:flex;gap:10px;align-items:center">
+      <input type="time" id="etStart" style="flex:1">
+      <span style="color:var(--ink-soft);font-weight:800">→</span>
+      <input type="time" id="etEnd" style="flex:1">
+    </div>
+    <div class="modal-actions">
+      <button class="btn cancel" id="etClear">清除</button>
+      <button class="btn save" id="etSave">儲存</button>
+    </div>
+  </div>
+</div>
+
 <!-- 回收桶 -->
 <div class="overlay" id="trashOverlay" onclick="if(event.target===this)this.classList.remove('show')">
   <div class="modal">
@@ -450,6 +480,7 @@
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.6/Sortable.min.js"></script>
 <script>
   /* ⬇⬇⬇ 把這裡換成你的 Google Maps API 金鑰 ⬇⬇⬇ */
   window.GMAPS_KEY = "AIzaSyAPmtfJZdKIKiHBnXgd87Hj28Scpq-mUbA";
@@ -546,7 +577,8 @@
   }
   function updateCalSummary(){
     var el=$("tripCalSummary"); if(!el) return;
-    if(!calStart){ el.textContent="尚未選擇（可不選，先給一天）"; return; }
+    if(!calStart){ el.style.display="none"; el.textContent=""; return; }
+    el.style.display="";
     if(!calEnd){ el.textContent=fmtDate(calStart)+"（當天來回）"; return; }
     var n=Math.round((new Date(calEnd)-new Date(calStart))/86400000)+1;
     el.textContent=fmtDate(calStart)+" ～ "+fmtDate(calEnd)+" ・ 共 "+n+" 天";
@@ -818,9 +850,35 @@
     legCache[key]={min:Math.round(sec/60), km:Math.round(m/100)/10};
     return legCache[key];
   }
-  async function optimizeDay(t,dayN){
+  async function recomputeDay(t,dayN,silent){
     var d=t.days.find(function(x){return x.n===dayN;}); if(!d) return;
     var mode=d.travelMode||"DRIVE";
+    var all=daySorted(t,dayN);
+    all.forEach(function(s,i){ s.order=i+1; });            // 鎖住目前顯示順序
+    var ordered=all.filter(function(s){return s.lat!=null;});
+    if(!ordered.length){ await saveTrips(); return; }
+    if(!silent) toast("計算交通時間中…"+(mode==="TRANSIT"?"🚆":"🚗"));
+    var ok=true, LONGHAUL=80; // 公里：超過視為搭飛機/長程，不算車程
+    try{
+      for(var i=0;i<ordered.length-1;i++){
+        var key=ordered[i].id+"|"+ordered[i+1].id+"|"+mode;
+        if(hav(ordered[i],ordered[i+1])>LONGHAUL){ legCache[key]={flight:true}; }
+        else { await routeLeg(ordered[i],ordered[i+1],mode); }
+      }
+    }catch(e){ ok=false; }
+    var clock=toMin(d.startTime); if(clock==null) clock=toMin(ordered[0].time); if(clock==null) clock=540;
+    for(var j=0;j<ordered.length;j++){
+      var s=ordered[j];
+      var prevLeg = j>0 ? legCache[ordered[j-1].id+"|"+ordered[j].id+"|"+mode] : null;
+      if(prevLeg && prevLeg.flight && toMin(s.time)!=null) clock=toMin(s.time);
+      var stay=(toMin(s.endTime)!=null&&toMin(s.time)!=null)?(toMin(s.endTime)-toMin(s.time)):60; if(stay<=0||stay>600) stay=60;
+      s.time=toHM(clock); s.endTime=toHM(clock+stay); clock+=stay;
+      if(j<ordered.length-1){ var lg=legCache[ordered[j].id+"|"+ordered[j+1].id+"|"+mode]; if(lg && !lg.flight) clock+=lg.min; }
+    }
+    await saveTrips();
+    if(!silent) toast(ok?"算好時間＋車程了 ✨":"順序好了，但交通時間查詢失敗：請確認已啟用 Routes API 並加進金鑰白名單 🙏");
+  }
+  async function optimizeDay(t,dayN){
     var seq=daySorted(t,dayN);
     var locatedIdx=[]; seq.forEach(function(s,i){ if(s.lat!=null) locatedIdx.push(i); });
     if(locatedIdx.length<2){ toast("這天要有至少 2 個『有地圖座標』的景點才能排順路 🗺️"); return; }
@@ -829,18 +887,31 @@
     while(pool.length){ var last=ordered[ordered.length-1],bi=0,bd=Infinity; pool.forEach(function(p,idx){var dd=hav(last,p); if(dd<bd){bd=dd;bi=idx;}}); ordered.push(pool.splice(bi,1)[0]); }
     locatedIdx.forEach(function(i,k){ seq[i]=ordered[k]; });
     seq.forEach(function(s,i){ s.order=i+1; });
-    toast("計算交通時間中…"+(mode==="TRANSIT"?"🚆":"🚗"));
-    var ok=true;
-    try{ for(var i=0;i<ordered.length-1;i++){ await routeLeg(ordered[i],ordered[i+1],mode); } }
-    catch(e){ ok=false; }
-    var clock=toMin(d.startTime); if(clock==null) clock=toMin(ordered[0].time); if(clock==null) clock=540;
-    for(var j=0;j<ordered.length;j++){
-      var s=ordered[j], stay=(toMin(s.endTime)!=null&&toMin(s.time)!=null)?(toMin(s.endTime)-toMin(s.time)):60; if(stay<=0||stay>600) stay=60;
-      s.time=toHM(clock); s.endTime=toHM(clock+stay); clock+=stay;
-      if(j<ordered.length-1){ var lg=legCache[ordered[j].id+"|"+ordered[j+1].id+"|"+mode]; if(lg) clock+=lg.min; }
-    }
-    await saveTrips(); renderTrips(); refreshMap();
-    toast(ok?"排好順路＋算好時間了 ✨":"順路排好了，但交通時間查詢失敗：請確認已啟用 Routes API 並加進金鑰白名單 🙏");
+    await recomputeDay(t,dayN,false);
+    renderTrips(); refreshMap();
+  }
+  async function onStopDrop(evt){
+    var t=curTrip(); if(!t) return;
+    var fromDay=+evt.from.getAttribute("data-daystops");
+    var toDay=+evt.to.getAttribute("data-daystops");
+    [evt.from, evt.to].forEach(function(cont){
+      if(!cont) return;
+      var dn=+cont.getAttribute("data-daystops");
+      cont.querySelectorAll(".stop-item").forEach(function(it,idx){
+        var s=t.stops.find(function(x){return x.id===it.getAttribute("data-stopid");});
+        if(s){ s.dayN=dn; s.order=idx+1; }
+      });
+    });
+    await saveTrips();
+    var days = fromDay===toDay ? [toDay] : [fromDay,toDay];
+    for(var i=0;i<days.length;i++){ await recomputeDay(t,days[i],true); }
+    renderTrips(); refreshMap();
+  }
+  function initSortables(el){
+    if(!window.Sortable) return;
+    el.querySelectorAll(".day-stops").forEach(function(cont){
+      Sortable.create(cont,{ group:"aj-stops", draggable:".stop-item", handle:".drag-h", animation:150, onEnd:onStopDrop });
+    });
   }
 
   function renderTrips(){
@@ -866,15 +937,19 @@
       if(stops.length){
         rows="";
         stops.forEach(function(s,i){
-          if(i>0){ var prev=stops[i-1]; if(prev.lat!=null && s.lat!=null){ var lg=legCache[prev.id+"|"+s.id+"|"+mode]; if(lg){ rows+='<div class="leg-chip">'+(mode==="TRANSIT"?"🚆":"🚗")+' 約 '+lg.min+' 分'+(lg.km?' ・ '+lg.km+' km':'')+'</div>'; } } }
+          var chip="";
+          if(i>0){ var prev=stops[i-1]; if(prev.lat!=null && s.lat!=null){ var lg=legCache[prev.id+"|"+s.id+"|"+mode]; if(lg){ chip= lg.flight ? '<div class="leg-chip flight">✈️ 長程移動・請自己填時間</div>' : '<div class="leg-chip">'+(mode==="TRANSIT"?"🚆":"🚗")+' 約 '+lg.min+' 分'+(lg.km?' ・ '+lg.km+' km':'')+'</div>'; } } }
           var hasPlace=(s.lat!=null)||s.region||s.country;
           var tlabel=s.time?(s.endTime?s.time+"–"+s.endTime:s.time):(s.endTime?"–"+s.endTime:"");
-          rows+='<div class="itin-row'+(hasPlace?" is-place":"")+'" data-editstop="'+s.id+'">'+
-            '<span class="itin-time">'+esc(tlabel)+'</span>'+
-            '<span class="itin-text">'+esc(s.name||"")+(s.note?' <span class="itin-note">· '+esc(s.note)+'</span>':'')+'</span>'+
-            '<button class="stop-del" data-delstop="'+s.id+'" title="刪除">×</button></div>';
+          rows+='<div class="stop-item" data-stopid="'+s.id+'">'+chip+
+            '<div class="itin-row'+(hasPlace?" is-place":"")+'" data-editstop="'+s.id+'">'+
+              '<span class="drag-h" title="拖曳排序">⠿</span>'+
+              '<span class="itin-time" data-edittime="'+s.id+'">'+(tlabel?esc(tlabel):'<span class="t-add">＋ 時間</span>')+'</span>'+
+              '<span class="itin-text">'+esc(s.name||"")+(s.note?' <span class="itin-note">· '+esc(s.note)+'</span>':'')+'</span>'+
+              '<button class="stop-del" data-delstop="'+s.id+'" title="刪除">×</button></div>'+
+          '</div>';
         });
-      } else { rows='<div class="itin-row"><span class="itin-text" style="color:var(--ink-soft)">這天還沒排景點</span></div>'; }
+      } else { rows='<div class="itin-empty-row">這天還沒排景點（可從別天拖過來）</div>'; }
       return '<div class="itin-day">'+
         '<div class="itin-head"><span class="itin-dnum">DAY '+d.n+'</span>'+
           (d.date?'<span class="itin-date">'+(+d.date.slice(5,7))+'/'+(+d.date.slice(8))+'</span>':'')+
@@ -885,7 +960,7 @@
           '<button class="dt-mode" data-mode="'+d.n+'" title="切換交通方式">'+(mode==="TRANSIT"?"🚆 電車":"🚗 開車")+'</button>'+
           '<button class="dt-opt" data-opt="'+d.n+'">🪄 排順路＋算時間</button>'+
         '</div>'+
-        rows+
+        '<div class="day-stops" data-daystops="'+d.n+'">'+rows+'</div>'+
         '<button class="add-link" data-addstop="'+d.n+'">＋ 加景點</button>'+
       '</div>';
     }).join("");
@@ -922,10 +997,12 @@
     var ad=$("addDay"); if(ad) ad.addEventListener("click",function(){ var max=t.days.reduce(function(m,x){return Math.max(m,x.n);},0); var sorted=t.days.slice().sort(function(a,b){return a.n-b.n;}); var last=sorted[sorted.length-1]; var nd=""; if(last&&last.date){ var dd=new Date(last.date+"T00:00:00"); dd.setDate(dd.getDate()+1); nd=fmtISO(dd);} t.days.push({n:max+1,date:nd,theme:""}); saveTrips(); renderTrips(); });
     el.querySelectorAll('[data-delday]').forEach(function(b){ b.addEventListener("click",function(){ removeDay(t,+b.getAttribute("data-delday")); }); });
     el.querySelectorAll('[data-delstop]').forEach(function(b){ b.addEventListener("click",function(ev){ ev.stopPropagation(); var sid=b.getAttribute("data-delstop"); var s=t.stops.find(function(x){return x.id===sid;}); if(s) trashItem("stop",{tripId:t.id,tripName:t.name,stop:s}); t.stops=t.stops.filter(function(x){return x.id!==sid;}); saveTrips(); renderTrips(); refreshMap(); }); });
-    el.querySelectorAll('[data-editstop]').forEach(function(r){ r.addEventListener("click",function(ev){ if(ev.target.classList.contains("stop-del")) return; var sid=r.getAttribute("data-editstop"); var s=t.stops.find(function(x){return x.id===sid;}); if(s) openStop(s.dayN,s.id); }); });
+    el.querySelectorAll('[data-editstop]').forEach(function(r){ r.addEventListener("click",function(ev){ if(ev.target.closest(".stop-del")||ev.target.closest(".drag-h")||ev.target.closest(".itin-time")) return; var sid=r.getAttribute("data-editstop"); var s=t.stops.find(function(x){return x.id===sid;}); if(s) openStop(s.dayN,s.id); }); });
+    el.querySelectorAll('[data-edittime]').forEach(function(tm){ tm.addEventListener("click",function(ev){ ev.stopPropagation(); openTimeEditor(tm.getAttribute("data-edittime")); }); });
     el.querySelectorAll('[data-mode]').forEach(function(b){ b.addEventListener("click",function(){ var n=+b.getAttribute("data-mode"); var dd=t.days.find(function(x){return x.n===n;}); if(dd){ dd.travelMode=((dd.travelMode||"DRIVE")==="DRIVE")?"TRANSIT":"DRIVE"; saveTrips(); renderTrips(); } }); });
     el.querySelectorAll('[data-starttime]').forEach(function(inp){ inp.addEventListener("change",function(){ var n=+inp.getAttribute("data-starttime"); var dd=t.days.find(function(x){return x.n===n;}); if(dd){ dd.startTime=inp.value; saveTrips(); } }); });
     el.querySelectorAll('[data-opt]').forEach(function(b){ b.addEventListener("click",function(){ b.disabled=true; b.textContent="計算中…"; optimizeDay(t,+b.getAttribute("data-opt")); }); });
+    initSortables(el);
   }
   function removeDay(t,n){
     if(t.stops.some(function(s){return s.dayN===n;})){ toast("這天還有景點，請先把景點刪掉再刪這天"); return; }
@@ -1087,7 +1164,6 @@
                 '<h3>'+esc(w.title)+'</h3>'+
                 (w.note?'<div class="note">'+esc(w.note)+'</div>':'')+
                 '<div class="wish-actions">'+
-                  '<button class="mini-btn go" data-go="'+w.id+'">✓ 我們去過了</button>'+
                   '<button class="mini-btn del" data-delw="'+w.id+'">刪除</button>'+
                 '</div></div>';
             }).join("")+'</div></div>';
@@ -1099,7 +1175,6 @@
     el.querySelectorAll("[data-f]").forEach(function(c){ c.addEventListener("click",function(){ wishFilter=c.getAttribute("data-f"); renderWishlist(); }); });
     el.querySelectorAll("[data-toggle]").forEach(function(h){ h.addEventListener("click",function(){ var c=h.getAttribute("data-toggle"); collapsedCountries[c]=!collapsedCountries[c]; h.parentNode.classList.toggle("collapsed"); }); });
     el.querySelectorAll("[data-delw]").forEach(function(b){b.addEventListener("click",function(){delWish(b.getAttribute("data-delw"));});});
-    el.querySelectorAll("[data-go]").forEach(function(b){b.addEventListener("click",function(){wishToMemory(b.getAttribute("data-go"));});});
   }
   var wishFilter="全部", collapsedCountries={};
   function flag(c){
@@ -1198,7 +1273,15 @@
     await saveTrips(); $("tripOverlay").classList.remove("show"); renderTrips();
   });
 
-  var stopWishMap={}, stopPickCoords=null, editingStopId=null;
+  var stopWishMap={}, stopPickCoords=null, editingStopId=null, editingTimeId=null;
+  function openTimeEditor(stopId){
+    var t=curTrip(); if(!t) return;
+    var s=t.stops.find(function(x){return x.id===stopId;}); if(!s) return;
+    editingTimeId=stopId;
+    $("timeTitle").textContent=s.name?("時間 · "+s.name):"設定時間";
+    $("etStart").value=s.time||""; $("etEnd").value=s.endTime||"";
+    $("timeOverlay").classList.add("show");
+  }
   function openStop(dayN, stopId){
     var t=curTrip(); if(!t) return;
     editingStopId = stopId || null;
@@ -1219,7 +1302,6 @@
       opts+='</optgroup>';
     });
     $("stopWish").innerHTML=opts; $("stopWish").value="";
-    $("stopTime").value=ex?(ex.time||""):""; $("stopEnd").value=ex?(ex.endTime||""):"";
     $("stopName").value=ex?(ex.name||""):""; $("stopCountry").value=ex?(ex.country||""):""; $("stopRegion").value=ex?(ex.region||""):""; $("stopNote").value=ex?(ex.note||""):"";
     $("stopSave").textContent = ex ? "儲存修改" : "加進行程";
     $("stopOverlay").classList.add("show");
@@ -1229,16 +1311,24 @@
     if(w){ $("stopName").value=w.title||""; $("stopCountry").value=w.country||""; $("stopRegion").value=w.region||""; if(w.note&&!$("stopNote").value)$("stopNote").value=w.note;
       stopPickCoords=(w.lat!=null)?{lat:w.lat,lng:w.lng}:null; }
   });
+  $("etClear").addEventListener("click",function(){ $("etStart").value=""; $("etEnd").value=""; });
+  $("etSave").addEventListener("click",async function(){
+    var t=curTrip(); if(!t||!editingTimeId){ $("timeOverlay").classList.remove("show"); return; }
+    var s=t.stops.find(function(x){return x.id===editingTimeId;});
+    if(s){ s.time=$("etStart").value.trim(); s.endTime=$("etEnd").value.trim(); await saveTrips(); renderTrips(); refreshMap(); }
+    editingTimeId=null; $("timeOverlay").classList.remove("show");
+  });
+  $("timeOverlay").addEventListener("click",function(ev){ if(ev.target===this){ editingTimeId=null; this.classList.remove("show"); } });
   $("stopCancel").addEventListener("click",function(){ editingStopId=null; $("stopOverlay").classList.remove("show"); });
   $("stopSave").addEventListener("click",async function(){
     var nm=$("stopName").value.trim(); if(!nm){$("stopName").focus();return;}
     var t=curTrip(); if(!t) return;
     if(editingStopId){
       var s=t.stops.find(function(x){return x.id===editingStopId;});
-      if(s){ s.dayN=+$("stopDay").value; s.time=$("stopTime").value.trim(); s.endTime=$("stopEnd").value.trim(); s.name=nm; s.country=$("stopCountry").value.trim(); s.region=$("stopRegion").value.trim(); s.note=$("stopNote").value.trim(); if(stopPickCoords){ s.lat=stopPickCoords.lat; s.lng=stopPickCoords.lng; } }
+      if(s){ s.dayN=+$("stopDay").value; s.name=nm; s.country=$("stopCountry").value.trim(); s.region=$("stopRegion").value.trim(); s.note=$("stopNote").value.trim(); if(stopPickCoords){ s.lat=stopPickCoords.lat; s.lng=stopPickCoords.lng; } }
       editingStopId=null;
     } else {
-      t.stops.push({ id:uid(), dayN:+$("stopDay").value, time:$("stopTime").value.trim(), endTime:$("stopEnd").value.trim(),
+      t.stops.push({ id:uid(), dayN:+$("stopDay").value, time:"", endTime:"",
         name:nm, country:$("stopCountry").value.trim(), region:$("stopRegion").value.trim(),
         note:$("stopNote").value.trim(),
         lat:stopPickCoords?stopPickCoords.lat:null, lng:stopPickCoords?stopPickCoords.lng:null });
@@ -1444,11 +1534,10 @@
   #googleSignIn{display:inline-flex;align-items:center;justify-content:center;gap:10px;background:#5f9bb0;color:#fff;border:none;border-radius:12px;padding:13px 24px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s}
   #googleSignIn:hover{background:#437a8c}
   #gateMsg{color:#c2554f;font-size:13px;margin-top:14px;min-height:18px}
-  #logoutBtn{position:fixed;top:12px;right:14px;z-index:60;background:rgba(255,255,255,.82);border:1px solid #e4e1d8;color:#717784;border-radius:20px;padding:6px 13px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Noto Sans TC',sans-serif;display:none}
+  #logoutBtn{display:none}
+  #logoutBtn::before{content:"・";margin:0 6px;color:var(--ink-soft)}
   #logoutBtn:hover{color:#41505a}
 </style>
-<button id="logoutBtn" onclick="window.fbAuth&&window.fbAuth.signOut()">登出</button>
-<button id="trashBtn" onclick="window.__openTrash&&window.__openTrash()" title="回收桶">🗑<span id="trashBadge"></span></button>
 <div id="loginGate">
   <div class="card">
     <h1>A&amp;J的旅行</h1>
