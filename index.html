@@ -480,6 +480,7 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.6/Sortable.min.js"></script>
+<script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js"></script>
 <script>
   /* ⬇⬇⬇ 把這裡換成你的 Google Maps API 金鑰 ⬇⬇⬇ */
   window.GMAPS_KEY = "AIzaSyAPmtfJZdKIKiHBnXgd87Hj28Scpq-mUbA";
@@ -1178,27 +1179,49 @@
     trips.forEach(function(t){ t.stops.forEach(function(s){ if(s.lat!=null){ out.push({trip:t.name, day:s.dayN, name:s.region||s.name, lat:s.lat, lng:s.lng}); } }); });
     return out;
   }
+  var mapCluster=null, mapLine=null;
   function refreshMap(){
     if(!mapMain) return;
+    if(mapCluster){ try{mapCluster.clearMarkers();}catch(e){} mapCluster=null; }
     if(mapMain.__pins){ mapMain.__pins.forEach(function(m){m.setMap(null);}); }
     mapMain.__pins=[];
+    if(mapLine){ mapLine.setMap(null); mapLine=null; }
     var bounds=new google.maps.LatLngBounds(); var any=false;
-    function addPin(lat,lng,html){
-      var m=new google.maps.Marker({position:{lat:lat,lng:lng}, map:mapMain, icon:pinSymbol()});
+    var markers=[], datedPts=[];
+    function addPin(lat,lng,html,date){
+      var m=new google.maps.Marker({position:{lat:lat,lng:lng}, icon:pinSymbol()});
       m.addListener("click",function(){ mapInfo.setContent('<div class="gpop">'+html+'</div>'); mapInfo.open(mapMain,m); });
-      mapMain.__pins.push(m); bounds.extend({lat:lat,lng:lng}); any=true;
+      markers.push(m); bounds.extend({lat:lat,lng:lng}); any=true;
+      if(date) datedPts.push({date:date, lat:lat, lng:lng});
     }
-    // 足跡點(完成旅程加入的)— 點圖釘才看到資訊
+    // 足跡點(完成旅程加入的)
     footprints.forEach(function(f){
       if(f.lat==null) return;
       addPin(f.lat,f.lng, '<b>'+esc(f.title||"")+'</b><br><span style="color:#8d9aa0">'+esc(f.place||"")+(f.place&&f.date?' · ':'')+fmtDate(f.date)+'</span><br>'+
         '<button class="pp-btn add" onclick="__fpToMem(\''+f.id+'\')">＋ 補上回憶</button> '+
-        '<button class="pp-btn del" onclick="__fpDel(\''+f.id+'\')">刪除</button>');
+        '<button class="pp-btn del" onclick="__fpDel(\''+f.id+'\')">刪除</button>', f.date);
     });
     // 有定位的回憶
     entries.filter(function(e){return e.lat!=null;}).forEach(function(e){
-      addPin(e.lat,e.lng, '<b>'+esc(e.title||"")+'</b><br>'+esc(e.place||"")+'<br><span style="color:#5f9bb0">'+fmtDate(e.date)+'</span>');
+      addPin(e.lat,e.lng, '<b>'+esc(e.title||"")+'</b><br>'+esc(e.place||"")+'<br><span style="color:#5f9bb0">'+fmtDate(e.date)+'</span>', e.date);
     });
+    // 旅行路線：依日期把走過的點連起來（虛線）
+    var ordered=datedPts.slice().sort(function(a,b){return (a.date||"").localeCompare(b.date||"");});
+    if(ordered.length>=2){
+      mapLine=new google.maps.Polyline({
+        path:ordered.map(function(p){return {lat:p.lat,lng:p.lng};}),
+        geodesic:true, strokeOpacity:0,
+        icons:[{ icon:{path:"M 0,-1 0,1", strokeColor:"#5f9bb0", strokeOpacity:.75, scale:3}, offset:"0", repeat:"13px" }],
+        map:mapMain
+      });
+    }
+    // 聚合：點太密自動合併成數字泡泡
+    if(window.markerClusterer && window.markerClusterer.MarkerClusterer && markers.length){
+      mapCluster=new markerClusterer.MarkerClusterer({map:mapMain, markers:markers});
+    } else {
+      markers.forEach(function(m){m.setMap(mapMain);});
+    }
+    mapMain.__pins=markers;
     if(any){
       mapMain.fitBounds(bounds,45);
       google.maps.event.addListenerOnce(mapMain,"idle",function(){ if(mapMain.getZoom()>9) mapMain.setZoom(9); });
@@ -1207,7 +1230,7 @@
     if(!total){
       $("placeList").innerHTML='<div class="geo-msg" style="text-align:center;width:100%">還沒有走過的點 — 旅程完成後按「✓ 我們完成這趟旅行了」，或新增有定位的回憶，足跡就會冒出來 👣</div>';
     } else {
-      $("placeList").innerHTML='<div class="geo-msg" style="width:100%">點地圖上的圖釘看資訊 · 共 '+total+' 個足跡 👣</div>';
+      $("placeList").innerHTML='<div class="geo-msg" style="width:100%">點地圖上的圖釘看資訊・虛線是你們的旅行路線 · 共 '+total+' 個足跡 👣</div>';
     }
   }
   function initPickMap(){
