@@ -118,11 +118,14 @@
   .place-chip::before{content:"📍 "}
   .pin{background:var(--rose);width:18px;height:18px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2.5px solid #fff;box-shadow:0 2px 6px rgba(90,110,120,.3)}
 
-  .wish-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
-  .wish{background:var(--paper-2);border-radius:14px;box-shadow:var(--shadow);padding:16px}
-  .wish h3{margin:0 0 4px;font-size:15px;font-weight:700}
-  .wish .note{font-size:13px;color:var(--ink-soft);line-height:1.6;white-space:pre-wrap}
-  .wish-actions{display:flex;gap:8px;margin-top:14px}
+  .wish-search{width:100%;box-sizing:border-box;font-family:var(--body);font-size:14px;color:var(--ink);background:#fff;border:1.5px solid #efe6d6;border-radius:16px;padding:11px 14px;margin:0 auto 16px;display:block;max-width:780px}
+  .wish-search:focus{outline:none;border-color:var(--terra);box-shadow:0 0 0 3px rgba(95,155,176,.15)}
+  .wish-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .wish{position:relative;background:var(--paper-2);border:1px solid #efe6d6;border-radius:14px;box-shadow:var(--shadow);padding:12px 30px 12px 13px}
+  .wish h3{margin:0;font-size:14px;font-weight:700;line-height:1.35;word-break:break-word}
+  .wish .note{font-size:12px;color:var(--ink-soft);line-height:1.5;white-space:pre-wrap;margin-top:4px}
+  .wish-x{position:absolute;top:6px;right:6px;width:24px;height:24px;border:none;background:rgba(224,138,134,.12);color:var(--rose);border-radius:50%;font-size:15px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+  .wish-x:hover{background:rgba(224,138,134,.28)}
   .mini-btn{border:none;cursor:pointer;font-family:var(--body);font-weight:600;font-size:12.5px;padding:7px 12px;border-radius:10px}
   .mini-btn.go{background:var(--sage);color:#fff}
   .mini-btn.del{background:var(--kraft);color:var(--ink-soft)}
@@ -197,22 +200,14 @@
   .date-range input[type=date]{flex:1;min-width:0}
   .dr-arrow{color:var(--ink-soft);font-size:16px}
   .modal-hint{font-size:12px;color:var(--ink-soft);margin:8px 0 0;line-height:1.6}
-  .cal-summary{font-size:13px;color:var(--terra-deep);background:#eef5f6;border-radius:12px;padding:8px 12px;margin:4px 0 8px;font-weight:500}
-  .cal{background:#fff;border:1.5px solid #efe6d6;border-radius:18px;padding:12px}
-  .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-  .cal-title{font-family:var(--hand);font-weight:700;font-size:18px;color:var(--ink)}
-  .cal-nav{border:none;background:#f3efe6;color:var(--terra-deep);width:30px;height:30px;border-radius:50%;font-size:18px;cursor:pointer;line-height:1}
-  .cal-nav:hover{background:#e7eff0}
-  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
-  .cal-wd{text-align:center;font-size:11px;color:var(--ink-soft);padding:3px 0;font-weight:700}
-  .cal-cell{height:40px;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--ink);border-radius:10px;cursor:pointer;user-select:none}
-  .cal-cell.empty{cursor:default}
-  .cal-cell.day:hover{background:#eef5f6}
-  .cal-cell.inrange{background:#e3eef0;border-radius:0}
-  .cal-cell.sel{background:var(--terra);color:#fff;font-weight:700}
-  .cal-cell.sel.start{border-radius:11px 0 0 11px}
-  .cal-cell.sel.end{border-radius:0 11px 11px 0}
-  .cal-cell.sel.single{border-radius:11px}
+  .cal-summary{font-size:13px;color:var(--terra-deep);background:#eef5f6;border-radius:12px;padding:9px 13px;margin:10px 0 4px;font-weight:700;text-align:center}
+  .dfield-row{display:flex;align-items:flex-end;gap:8px;margin-top:4px}
+  .dfield{flex:1;display:flex;flex-direction:column;gap:4px}
+  .dfield-cap{font-size:11px;color:var(--ink-soft);font-weight:700;letter-spacing:.04em;padding-left:2px}
+  .dfield input[type=date]{width:100%;box-sizing:border-box;font-family:var(--body);font-size:15px;color:var(--ink);background:#fff;border:1.5px solid #efe6d6;border-radius:14px;padding:11px 12px;-webkit-appearance:none;appearance:none;min-height:46px}
+  .dfield input[type=date]:focus{outline:none;border-color:var(--terra);box-shadow:0 0 0 3px rgba(95,155,176,.15)}
+  .dfield input[type=date]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.55;font-size:16px}
+  .dfield-arrow{color:var(--rose);font-weight:800;font-size:17px;padding-bottom:12px}
   .day-del{margin-left:auto;background:none;border:none;color:#cbb89c;cursor:pointer;font-size:13px;line-height:1;padding:3px 7px;border-radius:9px;align-self:center}
   .day-del:hover{background:rgba(224,138,134,.16);color:var(--rose)}
   .pac-host{margin:2px 0 0}
@@ -415,10 +410,14 @@
     <h2>新增一個旅程</h2>
     <label>旅程名稱</label>
     <input type="text" id="tripName" placeholder="例如：北海道冬季之旅">
-    <label style="margin-top:12px">出發日 ～ 回程日（在月曆上點開始日，再點結束日）</label>
-    <div class="cal-summary" id="tripCalSummary">尚未選擇</div>
-    <div class="cal" id="tripCal"></div>
-    <p class="modal-hint">只點一天＝當天來回；不選日期＝先給一天，之後可再加。</p>
+    <label style="margin-top:12px">出發日 ～ 回程日</label>
+    <div class="dfield-row">
+      <label class="dfield"><span class="dfield-cap">出發</span><input type="date" id="tripStart"></label>
+      <span class="dfield-arrow">→</span>
+      <label class="dfield"><span class="dfield-cap">回程</span><input type="date" id="tripEnd"></label>
+    </div>
+    <div class="cal-summary" id="tripCalSummary" style="display:none"></div>
+    <p class="modal-hint">只填出發＝當天來回；都不填＝先給一天，之後可再加。</p>
     <div class="modal-actions">
       <button class="btn cancel" id="tripCancel">取消</button>
       <button class="btn save" id="tripSave">建立旅程</button>
@@ -544,44 +543,19 @@
     while(cur<=end && guard<90){ days.push({n:n,date:fmtISO(cur),theme:""}); cur.setDate(cur.getDate()+1); n++; guard++; }
     return days.length?days:[{n:1,date:"",theme:""}];
   }
-  var calStart=null, calEnd=null, calY, calM;
-  function openTripCal(){ calStart=null; calEnd=null; var now=new Date(); calY=now.getFullYear(); calM=now.getMonth(); renderCal(); }
-  function renderCal(){
-    var el=$("tripCal"); if(!el) return;
-    var startDow=new Date(calY,calM,1).getDay();
-    var dim=new Date(calY,calM+1,0).getDate();
-    var html='<div class="cal-head"><button type="button" class="cal-nav" data-cal="prev">‹</button>'+
-      '<span class="cal-title">'+calY+'年 '+(calM+1)+'月</span>'+
-      '<button type="button" class="cal-nav" data-cal="next">›</button></div><div class="cal-grid">';
-    ["日","一","二","三","四","五","六"].forEach(function(w){ html+='<div class="cal-wd">'+w+'</div>'; });
-    for(var i=0;i<startDow;i++){ html+='<div class="cal-cell empty"></div>'; }
-    for(var d=1;d<=dim;d++){
-      var iso=calY+"-"+("0"+(calM+1)).slice(-2)+"-"+("0"+d).slice(-2);
-      var cls="cal-cell day";
-      if(calStart&&calEnd&&iso>calStart&&iso<calEnd) cls+=" inrange";
-      if(calStart&&iso===calStart){ cls+=" sel "+(calEnd?"start":"single"); }
-      if(calEnd&&iso===calEnd) cls+=" sel end";
-      html+='<div class="'+cls+'" data-iso="'+iso+'">'+d+'</div>';
-    }
-    html+="</div>";
-    el.innerHTML=html;
-    el.querySelectorAll("[data-cal]").forEach(function(b){ b.addEventListener("click",function(){ if(b.getAttribute("data-cal")==="prev"){ calM--; if(calM<0){calM=11;calY--;} } else { calM++; if(calM>11){calM=0;calY++;} } renderCal(); }); });
-    el.querySelectorAll("[data-iso]").forEach(function(c){ c.addEventListener("click",function(){ pickCalDay(c.getAttribute("data-iso")); }); });
+  function openTripCal(){
+    if($("tripStart")) $("tripStart").value="";
+    if($("tripEnd")) $("tripEnd").value="";
     updateCalSummary();
-  }
-  function pickCalDay(iso){
-    if(!calStart || (calStart&&calEnd)){ calStart=iso; calEnd=null; }
-    else if(iso<calStart){ calStart=iso; calEnd=null; }
-    else { calEnd=iso; }
-    renderCal();
   }
   function updateCalSummary(){
     var el=$("tripCalSummary"); if(!el) return;
-    if(!calStart){ el.style.display="none"; el.textContent=""; return; }
+    var sd=$("tripStart")?$("tripStart").value:"", ed=$("tripEnd")?$("tripEnd").value:"";
+    if(!sd){ el.style.display="none"; el.textContent=""; return; }
     el.style.display="";
-    if(!calEnd){ el.textContent=fmtDate(calStart)+"（當天來回）"; return; }
-    var n=Math.round((new Date(calEnd)-new Date(calStart))/86400000)+1;
-    el.textContent=fmtDate(calStart)+" ～ "+fmtDate(calEnd)+" ・ 共 "+n+" 天";
+    if(!ed || ed<sd){ el.textContent=fmtDate(sd)+"（當天來回）"; return; }
+    var n=Math.round((new Date(ed)-new Date(sd))/86400000)+1;
+    el.textContent=fmtDate(sd)+" ～ "+fmtDate(ed)+" ・ 共 "+n+" 天";
   }
 
   /* ---------- itinerary (你們的關西七日) ---------- */
@@ -1134,23 +1108,25 @@
 
   function renderWishlist(){
     var el = $("wish");
-    var header = '<div style="text-align:center;margin-bottom:18px"><button class="fab" id="addWish" style="position:static;background:var(--terra)">＋ 新增想去的地方</button></div>';
+    var header = '<div style="text-align:center;margin-bottom:14px"><button class="fab" id="addWish" style="position:static;background:var(--terra)">＋ 新增想去的地方</button></div>';
     if(!wishlist.length){ el.innerHTML = header + emptyState("夢想清單等你們填滿","下一站想去哪裡？先寫下來，總有一天會打勾 ✓","✨"); bindAddWish(); return; }
 
-    // group by country -> region
+    var search='<input type="text" id="wishSearch" class="wish-search" placeholder="🔍 搜尋想去的地方…" value="'+esc(wishQuery)+'">';
+    var q=wishQuery.trim().toLowerCase();
+    var list=wishlist.filter(function(w){ if(!q) return true; return ((w.title||"")+" "+(w.region||"")+" "+(w.country||"")+" "+(w.note||"")).toLowerCase().indexOf(q)>=0; });
+
     var byCountry={};
-    wishlist.forEach(function(w){ var c=w.country||"未分類"; (byCountry[c]=byCountry[c]||[]).push(w); });
+    list.forEach(function(w){ var c=w.country||"未分類"; (byCountry[c]=byCountry[c]||[]).push(w); });
     var countries=Object.keys(byCountry).sort(function(a,b){ if(a==="未分類")return 1; if(b==="未分類")return -1; return a.localeCompare(b);});
 
-    // country filter chips
-    var chips='<div class="wish-filter"><span class="fchip'+(wishFilter==="全部"?" on":"")+'" data-f="全部">全部 '+wishlist.length+'</span>'+
+    var chips='<div class="wish-filter"><span class="fchip'+(wishFilter==="全部"?" on":"")+'" data-f="全部">全部 '+list.length+'</span>'+
       countries.map(function(c){return '<span class="fchip'+(wishFilter===c?" on":"")+'" data-f="'+esc(c)+'">'+flag(c)+esc(c)+' '+byCountry[c].length+'</span>';}).join("")+'</div>';
 
-    // update country datalist for the add form
-    $("countryList").innerHTML = countries.filter(function(c){return c!=="未分類";}).map(function(c){return '<option value="'+esc(c)+'">';}).join("");
+    var allCountries=Object.keys(wishlist.reduce(function(o,w){o[w.country||"未分類"]=1;return o;},{}));
+    $("countryList").innerHTML = allCountries.filter(function(c){return c!=="未分類";}).map(function(c){return '<option value="'+esc(c)+'">';}).join("");
 
     var shown = countries.filter(function(c){ return wishFilter==="全部"||wishFilter===c; });
-    var body = shown.map(function(c){
+    var body = shown.length ? shown.map(function(c){
       var items=byCountry[c];
       var byReg={}; items.forEach(function(w){ var r=w.region||"其他"; (byReg[r]=byReg[r]||[]).push(w); });
       var regs=Object.keys(byReg).sort();
@@ -1161,22 +1137,22 @@
           return '<div class="wregion"><div class="wr-head">'+esc(r)+'</div><div class="wish-grid">'+
             byReg[r].map(function(w){
               return '<div class="wish">'+
+                '<button class="wish-x" data-delw="'+w.id+'" title="刪除">×</button>'+
                 '<h3>'+esc(w.title)+'</h3>'+
                 (w.note?'<div class="note">'+esc(w.note)+'</div>':'')+
-                '<div class="wish-actions">'+
-                  '<button class="mini-btn del" data-delw="'+w.id+'">刪除</button>'+
-                '</div></div>';
+              '</div>';
             }).join("")+'</div></div>';
         }).join("")+'</div></div>';
-    }).join("");
+    }).join("") : '<div class="geo-msg" style="text-align:center;padding:20px">找不到符合「'+esc(wishQuery)+'」的地方 🔍</div>';
 
-    el.innerHTML = header + chips + body;
+    el.innerHTML = header + search + chips + body;
     bindAddWish();
+    var si=$("wishSearch"); if(si){ si.addEventListener("input",function(){ wishQuery=si.value; renderWishlist(); }); if(q){ si.focus(); var v=si.value; si.value=""; si.value=v; } }
     el.querySelectorAll("[data-f]").forEach(function(c){ c.addEventListener("click",function(){ wishFilter=c.getAttribute("data-f"); renderWishlist(); }); });
     el.querySelectorAll("[data-toggle]").forEach(function(h){ h.addEventListener("click",function(){ var c=h.getAttribute("data-toggle"); collapsedCountries[c]=!collapsedCountries[c]; h.parentNode.classList.toggle("collapsed"); }); });
-    el.querySelectorAll("[data-delw]").forEach(function(b){b.addEventListener("click",function(){delWish(b.getAttribute("data-delw"));});});
+    el.querySelectorAll("[data-delw]").forEach(function(b){b.addEventListener("click",function(e){e.stopPropagation();delWish(b.getAttribute("data-delw"));});});
   }
-  var wishFilter="全部", collapsedCountries={};
+  var wishFilter="全部", collapsedCountries={}, wishQuery="";
   function flag(c){
     var m={"日本":"🇯🇵","台灣":"🇹🇼","臺灣":"🇹🇼","韓國":"🇰🇷","南韓":"🇰🇷","泰國":"🇹🇭","越南":"🇻🇳","美國":"🇺🇸","法國":"🇫🇷","義大利":"🇮🇹","英國":"🇬🇧","西班牙":"🇪🇸","德國":"🇩🇪","瑞士":"🇨🇭","荷蘭":"🇳🇱","奧地利":"🇦🇹","澳洲":"🇦🇺","紐西蘭":"🇳🇿","新加坡":"🇸🇬","馬來西亞":"🇲🇾","印尼":"🇮🇩","菲律賓":"🇵🇭","香港":"🇭🇰","澳門":"🇲🇴","中國":"🇨🇳","加拿大":"🇨🇦","土耳其":"🇹🇷","希臘":"🇬🇷","冰島":"🇮🇸","埃及":"🇪🇬","摩洛哥":"🇲🇦","葡萄牙":"🇵🇹","捷克":"🇨🇿","未分類":"🗂️"};
     return (m[c]||"🌍")+" ";
@@ -1265,9 +1241,12 @@
   /* ---------- tabs ---------- */
   /* ---------- trip & stop modals ---------- */
   $("tripCancel").addEventListener("click",function(){$("tripOverlay").classList.remove("show");});
+  if($("tripStart")) $("tripStart").addEventListener("change",updateCalSummary);
+  if($("tripEnd")) $("tripEnd").addEventListener("change",updateCalSummary);
   $("tripSave").addEventListener("click",async function(){
     var n=$("tripName").value.trim(); if(!n){$("tripName").focus();return;}
-    var sd=calStart||"", ed=calEnd||calStart||"";
+    var sd=$("tripStart")?$("tripStart").value:"", ed=$("tripEnd")?$("tripEnd").value:"";
+    if(ed&&sd&&ed<sd){ var tmp=sd; sd=ed; ed=tmp; }
     var t={id:uid(), name:n, days:buildDaysFromRange(sd,ed), stops:[]};
     trips.push(t); currentTripId=t.id;
     await saveTrips(); $("tripOverlay").classList.remove("show"); renderTrips();
