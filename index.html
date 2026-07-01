@@ -69,6 +69,8 @@
   .hero-next .hn-label{display:block;font-size:11px;letter-spacing:.1em;color:var(--terra-deep);font-weight:700;margin-bottom:2px}
   .hero-next .hn-name{font-family:var(--hand);font-size:23px;color:var(--ink);font-weight:700}
   .hero-next .hn-date{display:block;font-size:12px;color:var(--ink-soft);margin-top:1px}
+  .hn-count{display:block;font-family:var(--hand);font-size:15px;color:var(--terra-deep);font-weight:700;margin-top:4px}
+  .hn-count b{font-size:32px;color:var(--rose);margin:0 3px;vertical-align:-4px}
   .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:560px;margin:14px auto 4px}
   .tile{padding:15px 8px;border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center}
   .tile b{font-family:var(--hand);font-size:30px;font-weight:700;line-height:.9}
@@ -166,6 +168,12 @@
   .trip-chip{background:var(--paper-2);border:1px solid var(--kraft-deep);border-radius:20px;padding:8px 16px;font-weight:600;font-size:14px;cursor:pointer;color:var(--ink-soft)}
   .trip-chip.on{background:var(--terra);border-color:var(--terra);color:#fff}
   .trip-chip.add{background:transparent;border:1px dashed var(--terra);color:var(--terra)}
+  .emoji-pick{display:flex;flex-wrap:wrap;gap:6px}
+  .emoji-pick .ep{width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:19px;border-radius:12px;background:#f6f2e9;cursor:pointer;border:2px solid transparent}
+  .emoji-pick .ep.on{border-color:var(--terra);background:#eef5f6}
+  .color-pick{display:flex;gap:8px}
+  .color-pick .cp{width:30px;height:30px;border-radius:50%;cursor:pointer;border:3px solid #fff;box-shadow:0 0 0 1px #e4e1d8}
+  .color-pick .cp.on{box-shadow:0 0 0 2px var(--ink)}
   .trip-namewrap{text-align:center}
   .trip-name{font-family:var(--hand);font-size:32px;font-weight:700;color:var(--ink);text-align:center;margin:2px 0;outline:none;border-radius:8px;padding:2px 10px;display:inline-block}
   .trip-name:focus{background:rgba(95,155,176,.08)}
@@ -239,6 +247,33 @@
   .itin-time[data-edittime]{cursor:pointer;border-radius:6px}
   .itin-time[data-edittime]:hover{background:rgba(95,155,176,.1)}
   .t-add{color:var(--terra);font-weight:500;font-size:12px}
+  .nav-btn{background:none;border:none;cursor:pointer;font-size:15px;padding:2px 5px;border-radius:8px;line-height:1;flex-shrink:0}
+  .nav-btn:hover{background:rgba(95,155,176,.14)}
+  .recap-title{text-align:center;font-family:var(--hand);font-size:22px;font-weight:700;color:var(--ink);margin:4px 0 14px}
+  .recap-toggle{display:flex;justify-content:center;gap:8px;margin-bottom:14px}
+  .rt-chip{font-size:13px;font-weight:700;padding:7px 16px;border-radius:16px;background:#fff;border:1.5px solid #efe6d6;color:var(--ink-soft);cursor:pointer}
+  .rt-chip.on{background:var(--terra);border-color:var(--terra);color:#fff}
+  .recap-flags{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;max-width:560px;margin:0 auto 18px}
+  .rf{font-size:13px;background:#fff;border:1px solid #efe6d6;border-radius:16px;padding:5px 12px;color:var(--ink)}
+  .recap-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:560px;margin:0 auto 18px}
+  .rs-tile{background:#fff;border:1.5px solid #efe6d6;border-radius:18px;padding:14px 6px;text-align:center;box-shadow:var(--shadow)}
+  .rs-tile b{display:block;font-family:var(--hand);font-size:26px;font-weight:700;color:var(--terra-deep);line-height:1}
+  .rs-tile span{font-size:11px;color:var(--ink-soft);margin-top:4px;display:block}
+  .recap-card{background:#fff;border:1px solid #efe6d6;border-radius:16px;box-shadow:var(--shadow);padding:14px 16px;margin:0 auto 12px;max-width:560px}
+  .rc-top{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:700;color:var(--ink)}
+  .rc-emo{font-size:22px}
+  .rc-date{font-size:13px;color:var(--terra-deep);font-weight:600;margin-top:4px}
+  .rc-meta{display:flex;gap:14px;font-size:13px;color:var(--ink-soft);margin-top:6px}
+  .rc-regions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .rc-tag{font-size:12px;background:#eef5f6;color:var(--terra-deep);border-radius:20px;padding:3px 10px}
+  .lodge-add{color:var(--honey)!important}
+  .lodge-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:#f9f0db;border-radius:12px;padding:9px 13px;margin-top:8px;font-size:13px;color:#8a6d2e;cursor:pointer}
+  .lodge-bar b{font-size:14px;color:#7a5f28}
+  .lg-sub{font-size:12px;color:#a98c52;background:#fff;border-radius:10px;padding:2px 8px}
+  .export-trip{font-family:var(--body);font-weight:700;font-size:13px;border:1.5px solid var(--terra);background:#fff;color:var(--terra-deep);border-radius:14px;padding:8px 14px;cursor:pointer}
+  .export-trip:hover{background:#eef5f6}
+  @media(max-width:560px){ .recap-stats{grid-template-columns:repeat(2,1fr)} }
+  .pp-btn.nav{background:#eef5f6;color:var(--terra-deep)}
   .et-shift{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--ink);margin-top:12px;cursor:pointer;font-weight:500}
   .et-shift input{width:16px;height:16px;accent-color:var(--terra)}
 
@@ -323,6 +358,7 @@
     <div class="hero-next">
       <span class="hn-label">下一趟旅行</span>
       <span class="hn-name" id="nextTripName">還沒安排 ✈️</span>
+      <span class="hn-count" id="nextTripCount"></span>
       <span class="hn-date" id="nextTripDate"></span>
     </div>
   </div>
@@ -333,7 +369,7 @@
 <div class="wrap">
   <nav>
     <button class="tab active" data-tab="itinerary">✈️ 行程</button>
-    <button class="tab" data-tab="timeline">📖 時間軸</button>
+    <button class="tab" data-tab="timeline">📖 旅行回顧</button>
     <button class="tab" data-tab="map">🗺️ 足跡地圖</button>
     <button class="tab" data-tab="wish">⭐ 想去清單</button>
   </nav>
@@ -426,6 +462,14 @@
     </div>
     <div class="cal-summary" id="tripCalSummary" style="display:none"></div>
     <p class="modal-hint">只填出發＝當天來回；都不填＝先給一天，之後可再加。</p>
+    <label style="margin-top:12px">封面圖示</label>
+    <div class="emoji-pick" id="tripEmojiPick">
+      <span class="ep on" data-emo="✈️">✈️</span><span class="ep" data-emo="🏝️">🏝️</span><span class="ep" data-emo="🗻">🗻</span><span class="ep" data-emo="🌸">🌸</span><span class="ep" data-emo="🍜">🍜</span><span class="ep" data-emo="🏙️">🏙️</span><span class="ep" data-emo="⛩️">⛩️</span><span class="ep" data-emo="🎡">🎡</span><span class="ep" data-emo="🚗">🚗</span><span class="ep" data-emo="❤️">❤️</span>
+    </div>
+    <label style="margin-top:10px">封面顏色</label>
+    <div class="color-pick" id="tripColorPick">
+      <span class="cp on" data-col="#5f9bb0" style="background:#5f9bb0"></span><span class="cp" data-col="#e08a86" style="background:#e08a86"></span><span class="cp" data-col="#7fae8b" style="background:#7fae8b"></span><span class="cp" data-col="#e3b667" style="background:#e3b667"></span><span class="cp" data-col="#9d8bb8" style="background:#9d8bb8"></span><span class="cp" data-col="#d98fae" style="background:#d98fae"></span>
+    </div>
     <div class="modal-actions">
       <button class="btn cancel" id="tripCancel">取消</button>
       <button class="btn save" id="tripSave">建立旅程</button>
@@ -479,6 +523,28 @@
   </div>
 </div>
 
+<div class="overlay" id="lodgeOverlay">
+  <div class="modal" style="max-width:360px">
+    <h2 id="lodgeTitle">住宿 / 訂位</h2>
+    <label>飯店 / 住宿名稱</label>
+    <input type="text" id="lgName" placeholder="例如：京都四条飯店">
+    <label>入住 → 退房（可選）</label>
+    <div class="dfield-row">
+      <label class="dfield"><span class="dfield-cap">入住</span><input type="date" id="lgIn"></label>
+      <span class="dfield-arrow">→</span>
+      <label class="dfield"><span class="dfield-cap">退房</span><input type="date" id="lgOut"></label>
+    </div>
+    <label>訂單編號（可選）</label>
+    <input type="text" id="lgCode" placeholder="例如：ABC123456">
+    <label>地址 / 備註（可選）</label>
+    <textarea id="lgNote" placeholder="地址、訂房網站、房型…"></textarea>
+    <div class="modal-actions">
+      <button class="btn cancel" id="lgDelete">刪除</button>
+      <button class="btn save" id="lgSave">儲存</button>
+    </div>
+  </div>
+</div>
+
 <!-- 回收桶 -->
 <div class="overlay" id="trashOverlay" onclick="if(event.target===this)this.classList.remove('show')">
   <div class="modal">
@@ -488,6 +554,7 @@
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.6/Sortable.min.js"></script>
 <script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js"></script>
 <script>
@@ -566,8 +633,17 @@
   function openTripCal(){
     if($("tripStart")) $("tripStart").value="";
     if($("tripEnd")) $("tripEnd").value="";
+    tripEmoji="✈️"; tripColor="#5f9bb0";
+    var ep=$("tripEmojiPick"); if(ep) ep.querySelectorAll(".ep").forEach(function(x){x.classList.toggle("on", x.getAttribute("data-emo")==="✈️");});
+    var cp=$("tripColorPick"); if(cp) cp.querySelectorAll(".cp").forEach(function(x){x.classList.toggle("on", x.getAttribute("data-col")==="#5f9bb0");});
     updateCalSummary();
   }
+  var tripEmoji="✈️", tripColor="#5f9bb0";
+  (function bindTripPickers(){
+    var ep=$("tripEmojiPick"), cp=$("tripColorPick");
+    if(ep) ep.querySelectorAll(".ep").forEach(function(s){ s.addEventListener("click",function(){ ep.querySelectorAll(".ep").forEach(function(x){x.classList.remove("on");}); s.classList.add("on"); tripEmoji=s.getAttribute("data-emo"); }); });
+    if(cp) cp.querySelectorAll(".cp").forEach(function(s){ s.addEventListener("click",function(){ cp.querySelectorAll(".cp").forEach(function(x){x.classList.remove("on");}); s.classList.add("on"); tripColor=s.getAttribute("data-col"); }); });
+  })();
   function updateCalSummary(){
     var el=$("tripCalSummary"); if(!el) return;
     var sd=$("tripStart")?$("tripStart").value:"", ed=$("tripEnd")?$("tripEnd").value:"";
@@ -741,13 +817,15 @@
       var start = new Date(ds[0]+"T00:00:00");
       if(start>=today && (!bestDate || start<bestDate)){ bestDate=start; best=t; }
     });
-    var nn=$("nextTripName"), nd=$("nextTripDate");
+    var nn=$("nextTripName"), nd=$("nextTripDate"), nc=$("nextTripCount");
     if(best && nn){
       var diff = Math.round((bestDate - today)/86400000);
-      nn.textContent = best.name || "未命名旅程";
-      nd.textContent = diff===0 ? "就是今天 🎉" : ("倒數 " + diff + " 天 · " + fmtDate(bestDate.toISOString().slice(0,10)));
+      nn.textContent = (best.emoji?best.emoji+" ":"") + (best.name || "未命名旅程");
+      if(nc) nc.innerHTML = diff===0 ? "就是今天 🎉" : ('還有 <b>'+diff+'</b> 天');
+      nd.textContent = fmtDate(bestDate.toISOString().slice(0,10)) + " 出發";
     } else if(nn){
       nn.textContent = "還沒安排 ✈️";
+      if(nc) nc.textContent = "";
       nd.textContent = "在「行程」幫某天填上日期，這裡就會自動倒數";
     }
 
@@ -908,10 +986,57 @@
     });
   }
 
+  async function exportTripImage(t){
+    if(!window.html2canvas){ toast("圖片元件還在載入，請稍候再試 🙏"); return; }
+    toast("產生圖片中…🎨");
+    var col=t.color||"#5f9bb0";
+    var days=(t.days||[]).slice().sort(function(a,b){return a.n-b.n;});
+    var dates=days.map(function(d){return d.date;}).filter(Boolean).sort();
+    var html='<div style="width:600px;box-sizing:border-box;padding:30px 28px;background:#fbf7ef;font-family:\'Noto Sans TC\',sans-serif;color:#43505a">'+
+      '<div style="text-align:center;margin-bottom:20px">'+
+        '<div style="font-size:12px;letter-spacing:.14em;color:#a9b0a6">A&amp;J TRAVEL JOURNAL</div>'+
+        '<div style="font-size:27px;font-weight:700;color:'+col+';margin-top:3px">'+(t.emoji||"✈️")+' '+esc(t.name)+'</div>'+
+        (dates.length?'<div style="font-size:13px;color:#8d9aa0;margin-top:3px">'+fmtDate(dates[0])+(dates.length>1?" ～ "+fmtDate(dates[dates.length-1]):"")+'</div>':'')+
+      '</div>';
+    days.forEach(function(d){
+      var stops=daySorted(t,d.n);
+      html+='<div style="margin-bottom:16px">'+
+        '<div style="font-weight:700;font-size:17px;color:'+col+';border-bottom:2px solid '+col+'44;padding-bottom:5px;margin-bottom:8px">DAY '+d.n+(d.date?'　<span style="font-size:13px;color:#8d9aa0;font-weight:400">'+fmtDate(d.date)+'</span>':'')+(d.theme?'<br><span style="font-size:13px;color:#8d9aa0;font-weight:400">'+esc(d.theme)+'</span>':'')+'</div>';
+      if(stops.length){
+        stops.forEach(function(s){
+          var tl=s.time?(s.endTime?s.time+"–"+s.endTime:s.time):"";
+          html+='<div style="display:flex;gap:10px;padding:4px 0;font-size:14px;line-height:1.5">'+
+            '<div style="min-width:94px;color:#5f9bb0;font-weight:600">'+esc(tl)+'</div>'+
+            '<div style="flex:1"><span style="color:#e08a86">●</span> '+esc(s.name||"")+(s.note?' <span style="color:#a9b0a6;font-size:12px">· '+esc(s.note)+'</span>':'')+'</div>'+
+          '</div>';
+        });
+      } else { html+='<div style="color:#a9b0a6;font-size:13px">（這天還沒排景點）</div>'; }
+      if(d.lodging&&d.lodging.name){ html+='<div style="margin-top:7px;font-size:13px;color:#8a6d2e;background:#f9f0db;border-radius:8px;padding:6px 11px">🏨 '+esc(d.lodging.name)+(d.lodging.code?'　訂單 '+esc(d.lodging.code):'')+'</div>'; }
+      html+='</div>';
+    });
+    html+='<div style="text-align:center;font-size:12px;color:#b6b3aa;margin-top:10px">— A&amp;J ・ 把每一段旅行，都收進這裡 ❤ —</div></div>';
+    var host=document.createElement("div"); host.style.position="fixed"; host.style.left="-9999px"; host.style.top="0"; host.innerHTML=html; document.body.appendChild(host);
+    try{
+      var canvas=await html2canvas(host.firstChild,{scale:2,backgroundColor:"#fbf7ef",useCORS:true});
+      var dataUrl=canvas.toDataURL("image/png");
+      var fname=(t.name||"行程").replace(/[\\/:*?"<>|]/g,"")+".png";
+      if(navigator.canShare){
+        try{
+          var blob=await (await fetch(dataUrl)).blob();
+          var file=new File([blob],fname,{type:"image/png"});
+          if(navigator.canShare({files:[file]})){ await navigator.share({files:[file],title:t.name}); document.body.removeChild(host); toast("已開啟分享 📤"); return; }
+        }catch(e){}
+      }
+      var a=document.createElement("a"); a.href=dataUrl; a.download=fname; a.click();
+      toast("圖片已下載 ✅");
+    }catch(e){ toast("產生圖片失敗，請再試一次 🙏"); }
+    if(host.parentNode) document.body.removeChild(host);
+  }
   function renderTrips(){
     var el=$("itinerary");
     var bar='<div class="trip-bar">'+trips.map(function(t){
-      return '<span class="trip-chip'+(t.id===(curTrip()&&curTrip().id)?" on":"")+'" data-trip="'+t.id+'">'+esc(t.name)+'</span>';
+      var active=t.id===(curTrip()&&curTrip().id);
+      return '<span class="trip-chip'+(active?" on":"")+'" data-trip="'+t.id+'"'+(active&&t.color?(' style="background:'+t.color+';border-color:'+t.color+'"'):'')+'>'+(t.emoji?t.emoji+' ':'')+esc(t.name)+'</span>';
     }).join("")+'<span class="trip-chip add" id="newTrip">＋ 新增旅程</span></div>';
 
     if(!trips.length){ el.innerHTML=bar+emptyState("還沒有旅程","按「＋ 新增旅程」開一趟新的，再一天一天把景點排進去。","✈️"); bindTripBar(); return; }
@@ -920,6 +1045,7 @@
     var days=t.days.slice().sort(function(a,b){return a.n-b.n;});
     var detail='<div class="trip-namewrap"><div class="trip-name" contenteditable="true" spellcheck="false" data-ename="1">'+esc(t.name)+'</div></div>'+
       '<div class="trip-tools">'+
+        '<button class="export-trip" data-export="'+t.id+'">📤 匯出行程圖片</button>'+
         '<button class="complete-trip'+(t.done?' is-done':'')+'" data-done="'+t.id+'">'+(t.done?'✓ 已完成這趟（再點同步新景點）':'✓ 我們完成這趟旅行了，加進足跡')+'</button>'+
         '<button class="del-trip" data-deltrip="'+t.id+'">🗑 刪除這個旅程</button>'+
       '</div>';
@@ -940,6 +1066,7 @@
               '<span class="drag-h" title="拖曳排序">⠿</span>'+
               '<span class="itin-time" data-edittime="'+s.id+'">'+(tlabel?esc(tlabel):'<span class="t-add">＋ 時間</span>')+'</span>'+
               '<span class="itin-text">'+esc(s.name||"")+(s.note?' <span class="itin-note">· '+esc(s.note)+'</span>':'')+'</span>'+
+              (s.lat!=null?'<button class="nav-btn" data-nav="'+s.id+'" title="用 Google Maps 導航">🧭</button>':'')+
               '<button class="stop-del" data-delstop="'+s.id+'" title="刪除">×</button></div>'+
           '</div>';
         });
@@ -956,6 +1083,12 @@
         '</div>'+
         '<div class="day-stops" data-daystops="'+d.n+'">'+rows+'</div>'+
         '<button class="add-link" data-addstop="'+d.n+'">＋ 加景點</button>'+
+        ((d.lodging&&d.lodging.name) ?
+          '<div class="lodge-bar" data-lodge="'+d.n+'">🏨 <b>'+esc(d.lodging.name)+'</b>'+
+            ((d.lodging.checkin||d.lodging.checkout)?'<span class="lg-sub">'+esc([fmtDate(d.lodging.checkin),fmtDate(d.lodging.checkout)].filter(Boolean).join(" → "))+'</span>':'')+
+            (d.lodging.code?'<span class="lg-sub">訂單 '+esc(d.lodging.code)+'</span>':'')+
+          '</div>'
+          : '<button class="add-link lodge-add" data-lodge="'+d.n+'">＋ 住宿 / 訂位</button>')+
       '</div>';
     }).join("");
 
@@ -987,15 +1120,18 @@
         });
       });
     });
+    el.querySelectorAll('[data-export]').forEach(function(b){ b.addEventListener("click",function(){ exportTripImage(t); }); });
     el.querySelectorAll('[data-addstop]').forEach(function(b){ b.addEventListener("click",function(){ openStop(+b.getAttribute("data-addstop")); }); });
     var ad=$("addDay"); if(ad) ad.addEventListener("click",function(){ var max=t.days.reduce(function(m,x){return Math.max(m,x.n);},0); var sorted=t.days.slice().sort(function(a,b){return a.n-b.n;}); var last=sorted[sorted.length-1]; var nd=""; if(last&&last.date){ var dd=new Date(last.date+"T00:00:00"); dd.setDate(dd.getDate()+1); nd=fmtISO(dd);} t.days.push({n:max+1,date:nd,theme:""}); saveTrips(); renderTrips(); });
     el.querySelectorAll('[data-delday]').forEach(function(b){ b.addEventListener("click",function(){ removeDay(t,+b.getAttribute("data-delday")); }); });
     el.querySelectorAll('[data-delstop]').forEach(function(b){ b.addEventListener("click",function(ev){ ev.stopPropagation(); var sid=b.getAttribute("data-delstop"); var s=t.stops.find(function(x){return x.id===sid;}); if(s) trashItem("stop",{tripId:t.id,tripName:t.name,stop:s}); t.stops=t.stops.filter(function(x){return x.id!==sid;}); saveTrips(); renderTrips(); refreshMap(); }); });
-    el.querySelectorAll('[data-editstop]').forEach(function(r){ r.addEventListener("click",function(ev){ if(ev.target.closest(".stop-del")||ev.target.closest(".drag-h")||ev.target.closest(".itin-time")) return; var sid=r.getAttribute("data-editstop"); var s=t.stops.find(function(x){return x.id===sid;}); if(s) openStop(s.dayN,s.id); }); });
+    el.querySelectorAll('[data-editstop]').forEach(function(r){ r.addEventListener("click",function(ev){ if(ev.target.closest(".stop-del")||ev.target.closest(".drag-h")||ev.target.closest(".itin-time")||ev.target.closest(".nav-btn")) return; var sid=r.getAttribute("data-editstop"); var s=t.stops.find(function(x){return x.id===sid;}); if(s) openStop(s.dayN,s.id); }); });
+    el.querySelectorAll('[data-nav]').forEach(function(b){ b.addEventListener("click",function(ev){ ev.stopPropagation(); var s=t.stops.find(function(x){return x.id===b.getAttribute("data-nav");}); if(s) window.__navTo(s.lat,s.lng,s.name); }); });
     el.querySelectorAll('[data-edittime]').forEach(function(tm){ tm.addEventListener("click",function(ev){ ev.stopPropagation(); openTimeEditor(tm.getAttribute("data-edittime")); }); });
     el.querySelectorAll('[data-mode]').forEach(function(b){ b.addEventListener("click",function(){ var n=+b.getAttribute("data-mode"); var dd=t.days.find(function(x){return x.n===n;}); if(dd){ dd.travelMode=((dd.travelMode||"DRIVE")==="DRIVE")?"TRANSIT":"DRIVE"; saveTrips(); renderTrips(); } }); });
     el.querySelectorAll('[data-starttime]').forEach(function(inp){ inp.addEventListener("change",function(){ var n=+inp.getAttribute("data-starttime"); var dd=t.days.find(function(x){return x.n===n;}); if(dd){ dd.startTime=inp.value; saveTrips(); } }); });
     el.querySelectorAll('[data-opt]').forEach(function(b){ b.addEventListener("click",function(){ b.disabled=true; b.textContent="計算中…"; optimizeDay(t,+b.getAttribute("data-opt")); }); });
+    el.querySelectorAll('[data-lodge]').forEach(function(b){ b.addEventListener("click",function(){ openLodge(+b.getAttribute("data-lodge")); }); });
     initSortables(el);
   }
   function removeDay(t,n){
@@ -1039,6 +1175,12 @@
     renderAll();
   }
   window.__fpToMem=fpToMemory;
+  window.__navTo=function(lat,lng,name){
+    var u=(lat!=null&&lat!==""&&lng!=null&&lng!=="")
+      ? "https://www.google.com/maps/dir/?api=1&destination="+lat+","+lng
+      : "https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(name||"");
+    window.open(u,"_blank");
+  };
   window.__fpDel=deleteFootprint;
 
   /* ---------- 回收桶（軟刪除，保留 30 天） ---------- */
@@ -1110,22 +1252,65 @@
   function openTrash(){ renderTrash(); $("trashOverlay").classList.add("show"); }
   window.__openTrash=openTrash;
 
-  function renderTimeline(){
+  var recapScope="all";
+  function renderTimeline(){ // 旅行回顧
     var el = $("timeline");
-    if(!entries.length){ el.innerHTML = emptyState("時間軸還是空白的","每加入一段回憶，這裡就會多一個小腳印。","🐾"); return; }
-    var sorted = entries.slice().sort(function(a,b){return (b.date||"").localeCompare(a.date||"");});
-    el.innerHTML = '<div class="timeline">'+sorted.map(function(e){
-      return '<div class="tl-item">'+
-        '<div class="tl-date">'+ (fmtDate(e.date)||"某一天") +'</div>'+
-        '<div class="tl-card">'+
-          '<h3>'+esc(e.title||"無題")+'</h3>'+
-          (e.place?'<div class="place">'+esc(e.place)+'</div>':'')+
-          (e.note?'<p>'+esc(e.note)+'</p>':'')+
-          (e.photo?'<img src="'+e.photo+'" alt="">':'')+
-        '</div></div>';
-    }).join("")+'</div>';
+    var fpAll=footprints.filter(function(f){return f.lat!=null;});
+    var doneTrips=trips.filter(function(t){return t.done;});
+    if(!doneTrips.length && !fpAll.length){
+      el.innerHTML = emptyState("還沒有旅行回顧","完成一趟旅行後（在行程頁按「✓ 我們完成這趟旅行了」），這裡會自動生成回顧卡與統計 📖","📖");
+      return;
+    }
+    var year=new Date().getFullYear();
+    var inYear=function(ds){ return ds && ds.slice(0,4)===String(year); };
+    var fpScope = recapScope==="year" ? fpAll.filter(function(f){return inYear(f.date);}) : fpAll;
+    var doneScope = recapScope==="year" ? doneTrips.filter(function(t){return (t.days||[]).some(function(d){return inYear(d.date);});}) : doneTrips;
+    var countries={}, cities={};
+    fpScope.forEach(function(f){ if(f.place) countries[f.place]=1; if(f.title) cities[f.title]=1; });
+    var toggle='<div class="recap-toggle"><span class="rt-chip'+(recapScope==="all"?" on":"")+'" data-scope="all">全部</span><span class="rt-chip'+(recapScope==="year"?" on":"")+'" data-scope="year">'+year+' 今年</span></div>';
+    var stat='<div class="recap-stats">'+
+      '<div class="rs-tile"><b>'+doneScope.length+'</b><span>趟旅行</span></div>'+
+      '<div class="rs-tile"><b>'+Object.keys(countries).length+'</b><span>個國家</span></div>'+
+      '<div class="rs-tile"><b>'+Object.keys(cities).length+'</b><span>個地點</span></div>'+
+      '<div class="rs-tile"><b>'+fpScope.length+'</b><span>個足跡</span></div>'+
+    '</div>';
+    var flags=Object.keys(countries).length ? '<div class="recap-flags">'+Object.keys(countries).sort().map(function(c){return '<span class="rf">'+flag(c)+esc(c)+'</span>';}).join("")+'</div>' : '';
+    var cards=doneScope.map(function(t){
+      var dates=(t.days||[]).map(function(d){return d.date;}).filter(Boolean).sort();
+      var range=dates.length?(fmtDate(dates[0])+(dates.length>1?" ～ "+fmtDate(dates[dates.length-1]):"")):"";
+      var nDays=(t.days||[]).length;
+      var located=(t.stops||[]).filter(function(s){return s.lat!=null;});
+      var regionSet={}; located.forEach(function(s){ if(s.region) regionSet[s.region]=1; });
+      var regions=Object.keys(regionSet);
+      var col=t.color||"#5f9bb0";
+      return '<div class="recap-card" style="border-left:5px solid '+col+'">'+
+        '<div class="rc-top"><span class="rc-emo">'+(t.emoji||"✈️")+'</span><b>'+esc(t.name)+'</b></div>'+
+        (range?'<div class="rc-date">'+range+'</div>':'')+
+        '<div class="rc-meta"><span>🗓 '+nDays+' 天</span><span>📍 '+located.length+' 個景點</span></div>'+
+        (regions.length?'<div class="rc-regions">'+regions.slice(0,8).map(function(r){return '<span class="rc-tag">'+esc(r)+'</span>';}).join("")+'</div>':'')+
+      '</div>';
+    }).join("");
+    el.innerHTML = '<div class="recap-title">🌏 我們的旅行回顧</div>' + toggle + stat + flags + (cards||'<div class="geo-msg" style="text-align:center;padding:14px">這個範圍還沒有完成的旅程 ✨</div>');
+    el.querySelectorAll("[data-scope]").forEach(function(b){ b.addEventListener("click",function(){ recapScope=b.getAttribute("data-scope"); renderTimeline(); }); });
   }
 
+  var wishMeMarker=null;
+  function locateWish(){
+    if(!navigator.geolocation){ toast("這個裝置不支援定位 🙏"); return; }
+    toast("定位中…📍");
+    navigator.geolocation.getCurrentPosition(function(pos){
+      var ll={lat:pos.coords.latitude, lng:pos.coords.longitude};
+      if(!wishMap) return;
+      if(wishMeMarker) wishMeMarker.setMap(null);
+      wishMeMarker=new google.maps.Marker({ position:ll, map:wishMap, zIndex:9999,
+        icon:{ path:google.maps.SymbolPath.CIRCLE, scale:7, fillColor:"#4285F4", fillOpacity:1, strokeColor:"#fff", strokeWeight:3 },
+        title:"我現在的位置" });
+      wishMap.setCenter(ll); wishMap.setZoom(13);
+      toast("找到你了 📍");
+    }, function(err){
+      toast(err.code===1?"你拒絕了定位權限 🙏":"定位失敗，請確認已開啟定位");
+    }, {enableHighAccuracy:true, timeout:10000});
+  }
   var wishMap=null, wishCluster=null, wishPins=[], wishInfo=null;
   function refreshWishMap(){
     var wrap=$("wishMapWrap"); if(!wrap) return;
@@ -1133,16 +1318,17 @@
     if(!window.gmReady || !located.length){ wrap.style.display="none"; return; }
     wrap.style.display="";
     if(!wishMap){
-      wrap.innerHTML='<div id="wishMap"></div>';
+      wrap.innerHTML='<div class="map-toolbar"><button class="locate-btn" id="wishLocateBtn">📍 我的位置</button></div><div id="wishMap"></div>';
       wishMap=new google.maps.Map($("wishMap"),{center:{lat:23.7,lng:121},zoom:3,mapTypeControl:false,streetViewControl:false,fullscreenControl:false,styles:MAP_STYLE,gestureHandling:"greedy"});
       wishInfo=new google.maps.InfoWindow();
+      var wlb=$("wishLocateBtn"); if(wlb) wlb.addEventListener("click",locateWish);
     } else { google.maps.event.trigger(wishMap,"resize"); }
     if(wishCluster){ try{wishCluster.clearMarkers();}catch(e){} wishCluster=null; }
     wishPins.forEach(function(m){m.setMap(null);}); wishPins=[];
     var bounds=new google.maps.LatLngBounds();
     located.forEach(function(w){
       var m=new google.maps.Marker({position:{lat:w.lat,lng:w.lng}, icon:pinSymbol("#e08a86")});
-      m.addListener("click",function(){ wishInfo.setContent('<div class="gpop"><b>'+esc(w.title||"")+'</b><br><span style="color:#8d9aa0">'+esc([w.country,w.region].filter(Boolean).join("・"))+'</span></div>'); wishInfo.open(wishMap,m); });
+      m.addListener("click",function(){ wishInfo.setContent('<div class="gpop"><b>'+esc(w.title||"")+'</b><br><span style="color:#8d9aa0">'+esc([w.country,w.region].filter(Boolean).join("・"))+'</span><br><button class="pp-btn nav" onclick="__navTo('+w.lat+','+w.lng+')">🧭 帶我去</button></div>'); wishInfo.open(wishMap,m); });
       wishPins.push(m); bounds.extend({lat:w.lat,lng:w.lng});
     });
     if(window.markerClusterer&&window.markerClusterer.MarkerClusterer){ wishCluster=new markerClusterer.MarkerClusterer({map:wishMap,markers:wishPins,renderer:clusterRenderer("#e08a86")}); }
@@ -1236,19 +1422,19 @@
     if(mapLines){ mapLines.forEach(function(l){l.setMap(null);}); }
     mapLines=[];
     var bounds=new google.maps.LatLngBounds(); var any=false;
-    var markers=[], segs={};
-    var ROUTE_COLORS=["#5f9bb0","#e08a86","#7fae8b","#e3b667","#9d8bb8","#d98fae","#6bb2a0"];
+    var markers=[];
+    var ROUTE_COLORS=[];
     function addPin(lat,lng,html,segKey,ord){
       var m=new google.maps.Marker({position:{lat:lat,lng:lng}, icon:pinSymbol()});
       m.addListener("click",function(){ mapInfo.setContent('<div class="gpop">'+html+'</div>'); mapInfo.open(mapMain,m); });
       markers.push(m); bounds.extend({lat:lat,lng:lng}); any=true;
-      if(segKey){ (segs[segKey]=segs[segKey]||[]).push({lat:lat,lng:lng,ord:ord}); }
     }
     // 足跡點（依「旅程＋日期」分段畫線）
     footprints.forEach(function(f,i){
       if(f.lat==null) return;
       var key = f.date ? ((f.fromTrip||"trip")+"|"+f.date) : "";
       addPin(f.lat,f.lng, '<b>'+esc(f.title||"")+'</b><br><span style="color:#8d9aa0">'+esc(f.place||"")+(f.place&&f.date?' · ':'')+fmtDate(f.date)+'</span><br>'+
+        '<button class="pp-btn nav" onclick="__navTo('+f.lat+','+f.lng+')">🧭 帶我去</button> '+
         '<button class="pp-btn add" onclick="__fpToMem(\''+f.id+'\')">＋ 補上回憶</button> '+
         '<button class="pp-btn del" onclick="__fpDel(\''+f.id+'\')">刪除</button>', key, i);
     });
@@ -1257,19 +1443,7 @@
       var key = e.date ? ("mem|"+e.date) : "";
       addPin(e.lat,e.lng, '<b>'+esc(e.title||"")+'</b><br>'+esc(e.place||"")+'<br><span style="color:#5f9bb0">'+fmtDate(e.date)+'</span>', key, i);
     });
-    // 每個「旅程+天」各一條線、不同顏色
-    var ci=0;
-    Object.keys(segs).sort().forEach(function(key){
-      var pts=segs[key].sort(function(a,b){return a.ord-b.ord;});
-      if(pts.length<2) return;
-      var col=ROUTE_COLORS[ci%ROUTE_COLORS.length]; ci++;
-      mapLines.push(new google.maps.Polyline({
-        path:pts.map(function(p){return {lat:p.lat,lng:p.lng};}),
-        geodesic:true, strokeOpacity:0,
-        icons:[{ icon:{path:"M 0,-1 0,1", strokeColor:col, strokeOpacity:.85, scale:3}, offset:"0", repeat:"12px" }],
-        map:mapMain
-      }));
-    });
+    // （路線已取消）
     // 聚合：柔和圓泡＋數字
     if(window.markerClusterer && window.markerClusterer.MarkerClusterer && markers.length){
       mapCluster=new markerClusterer.MarkerClusterer({map:mapMain, markers:markers, renderer:clusterRenderer("#5f9bb0")});
@@ -1286,7 +1460,7 @@
     if(!total){
       $("placeList").innerHTML='<div class="geo-msg" style="text-align:center;width:100%">還沒有走過的點 — 旅程完成後按「✓ 我們完成這趟旅行了」，或新增有定位的回憶，足跡就會冒出來 👣</div>';
     } else {
-      $("placeList").innerHTML='<div class="geo-msg" style="width:100%">彩色虛線＝各天的路線・點圖釘看資訊 · 共 '+total+' 個足跡 👣</div>';
+      $("placeList").innerHTML='<div class="geo-msg" style="width:100%">點地圖上的圖釘看資訊 · 共 '+total+' 個足跡 👣</div>';
     }
   }
   var meMarker=null;
@@ -1344,7 +1518,7 @@
     var n=$("tripName").value.trim(); if(!n){$("tripName").focus();return;}
     var sd=$("tripStart")?$("tripStart").value:"", ed=$("tripEnd")?$("tripEnd").value:"";
     if(ed&&sd&&ed<sd){ var tmp=sd; sd=ed; ed=tmp; }
-    var t={id:uid(), name:n, days:buildDaysFromRange(sd,ed), stops:[]};
+    var t={id:uid(), name:n, emoji:tripEmoji, color:tripColor, days:buildDaysFromRange(sd,ed), stops:[]};
     trips.push(t); currentTripId=t.id;
     await saveTrips(); $("tripOverlay").classList.remove("show"); renderTrips();
   });
@@ -1409,6 +1583,29 @@
   });
   $("timeOverlay").addEventListener("click",function(ev){ if(ev.target===this){ editingTimeId=null; this.classList.remove("show"); } });
   if($("locateBtn")) $("locateBtn").addEventListener("click",locateMe);
+  var editingLodgeDay=null;
+  function openLodge(dayN){
+    var t=curTrip(); if(!t) return; var d=t.days.find(function(x){return x.n===dayN;}); if(!d) return;
+    editingLodgeDay=dayN; var lg=d.lodging||{};
+    $("lodgeTitle").textContent="DAY "+dayN+"　住宿 / 訂位";
+    $("lgName").value=lg.name||""; $("lgIn").value=lg.checkin||""; $("lgOut").value=lg.checkout||""; $("lgCode").value=lg.code||""; $("lgNote").value=lg.note||"";
+    $("lodgeOverlay").classList.add("show");
+  }
+  $("lgSave").addEventListener("click",async function(){
+    var t=curTrip(); if(!t||editingLodgeDay==null){ $("lodgeOverlay").classList.remove("show"); return; }
+    var d=t.days.find(function(x){return x.n===editingLodgeDay;});
+    if(d){
+      var nm=$("lgName").value.trim();
+      d.lodging = nm ? {name:nm, checkin:$("lgIn").value, checkout:$("lgOut").value, code:$("lgCode").value.trim(), note:$("lgNote").value.trim()} : null;
+      await saveTrips(); renderTrips();
+    }
+    editingLodgeDay=null; $("lodgeOverlay").classList.remove("show");
+  });
+  $("lgDelete").addEventListener("click",async function(){
+    var t=curTrip(); if(t&&editingLodgeDay!=null){ var d=t.days.find(function(x){return x.n===editingLodgeDay;}); if(d){ d.lodging=null; await saveTrips(); renderTrips(); } }
+    editingLodgeDay=null; $("lodgeOverlay").classList.remove("show");
+  });
+  $("lodgeOverlay").addEventListener("click",function(ev){ if(ev.target===this){ editingLodgeDay=null; this.classList.remove("show"); } });
   $("stopCancel").addEventListener("click",function(){ editingStopId=null; $("stopOverlay").classList.remove("show"); });
   $("stopSave").addEventListener("click",async function(){
     var nm=$("stopName").value.trim(); if(!nm){$("stopName").focus();return;}
