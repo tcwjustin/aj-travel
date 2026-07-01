@@ -111,6 +111,11 @@
   .tl-card img{width:100%;max-height:240px;object-fit:cover;border-radius:11px;margin-top:10px}
 
   #map{height:440px;border-radius:16px;box-shadow:var(--shadow);border:1px solid var(--kraft-deep);overflow:hidden}
+  .map-toolbar{display:flex;justify-content:flex-end;margin-bottom:8px}
+  .locate-btn{font-family:var(--body);font-weight:700;font-size:13px;color:var(--terra-deep);background:#fff;border:1.5px solid #efe6d6;border-radius:16px;padding:8px 14px;cursor:pointer;box-shadow:var(--shadow)}
+  .locate-btn:hover{background:#eef5f6}
+  .wish-map-wrap{margin-bottom:16px}
+  #wishMap{height:240px;border-radius:16px;box-shadow:var(--shadow);border:1px solid var(--kraft-deep);overflow:hidden}
   .leaflet-container{background:#eaf0ee !important;font-family:var(--body)}
   .leaflet-container .leaflet-tile{filter:saturate(.85) brightness(1.03)}
   .place-list{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
@@ -234,6 +239,8 @@
   .itin-time[data-edittime]{cursor:pointer;border-radius:6px}
   .itin-time[data-edittime]:hover{background:rgba(95,155,176,.1)}
   .t-add{color:var(--terra);font-weight:500;font-size:12px}
+  .et-shift{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--ink);margin-top:12px;cursor:pointer;font-weight:500}
+  .et-shift input{width:16px;height:16px;accent-color:var(--terra)}
 
   .fab{position:fixed;right:22px;bottom:22px;z-index:50;background:var(--terra);color:#fff;border:none;cursor:pointer;border-radius:50px;padding:14px 22px;font-family:var(--body);font-weight:700;font-size:15px;box-shadow:0 8px 22px rgba(95,155,176,.45);display:flex;align-items:center;gap:8px;transition:transform .12s}
   .fab:hover{transform:translateY(-2px)}
@@ -334,6 +341,7 @@
   <section class="panel active" id="itinerary"></section>
   <section class="panel" id="timeline"></section>
   <section class="panel" id="map-panel">
+    <div class="map-toolbar"><button class="locate-btn" id="locateBtn">📍 我的位置</button></div>
     <div id="map"></div>
     <div class="place-list" id="placeList"></div>
   </section>
@@ -463,6 +471,7 @@
       <span style="color:var(--ink-soft);font-weight:800">→</span>
       <input type="time" id="etEnd" style="flex:1">
     </div>
+    <label class="et-shift"><input type="checkbox" id="etShift" checked> 後面的行程跟著順移</label>
     <div class="modal-actions">
       <button class="btn cancel" id="etClear">清除</button>
       <button class="btn save" id="etSave">儲存</button>
@@ -529,7 +538,17 @@
     {featureType:"transit",stylers:[{visibility:"off"}]},
     {featureType:"administrative",elementType:"geometry",stylers:[{color:"#d8d4c8"}]}
   ];
-  function pinSymbol(){ return { path:"M0,-7 C4,-7 7,-4 7,0 C7,5 0,10 0,10 C0,10 -7,5 -7,0 C-7,-4 -4,-7 0,-7 Z", fillColor:"#5f9bb0", fillOpacity:1, strokeColor:"#ffffff", strokeWeight:1.5, scale:1.7, anchor:(window.google&&google.maps)?new google.maps.Point(0,10):null }; }
+  function pinSymbol(color){ return { path:"M0,-7 C4,-7 7,-4 7,0 C7,5 0,10 0,10 C0,10 -7,5 -7,0 C-7,-4 -4,-7 0,-7 Z", fillColor:color||"#5f9bb0", fillOpacity:1, strokeColor:"#ffffff", strokeWeight:1.5, scale:1.7, anchor:(window.google&&google.maps)?new google.maps.Point(0,10):null }; }
+  function clusterRenderer(fill){
+    return { render:function(o){
+      var count=o.count, position=o.position;
+      var svg='<svg xmlns="http://www.w3.org/2000/svg" width="46" height="46"><circle cx="23" cy="23" r="22" fill="#fbf7ef" opacity="0.92"/><circle cx="23" cy="23" r="16.5" fill="'+fill+'"/></svg>';
+      return new google.maps.Marker({ position:position,
+        icon:{ url:"data:image/svg+xml;base64,"+btoa(svg), scaledSize:new google.maps.Size(46,46), anchor:new google.maps.Point(23,23) },
+        label:{ text:String(count), color:"#ffffff", fontSize:"13px", fontWeight:"700" },
+        zIndex:2000+count });
+    }};
+  }
 
   /* ---------- helpers ---------- */
   function $(id){return document.getElementById(id);}
@@ -1107,11 +1126,40 @@
     }).join("")+'</div>';
   }
 
+  var wishMap=null, wishCluster=null, wishPins=[], wishInfo=null;
+  function refreshWishMap(){
+    var wrap=$("wishMapWrap"); if(!wrap) return;
+    var located=wishlist.filter(function(w){return w.lat!=null;});
+    if(!window.gmReady || !located.length){ wrap.style.display="none"; return; }
+    wrap.style.display="";
+    if(!wishMap){
+      wrap.innerHTML='<div id="wishMap"></div>';
+      wishMap=new google.maps.Map($("wishMap"),{center:{lat:23.7,lng:121},zoom:3,mapTypeControl:false,streetViewControl:false,fullscreenControl:false,styles:MAP_STYLE,gestureHandling:"greedy"});
+      wishInfo=new google.maps.InfoWindow();
+    } else { google.maps.event.trigger(wishMap,"resize"); }
+    if(wishCluster){ try{wishCluster.clearMarkers();}catch(e){} wishCluster=null; }
+    wishPins.forEach(function(m){m.setMap(null);}); wishPins=[];
+    var bounds=new google.maps.LatLngBounds();
+    located.forEach(function(w){
+      var m=new google.maps.Marker({position:{lat:w.lat,lng:w.lng}, icon:pinSymbol("#e08a86")});
+      m.addListener("click",function(){ wishInfo.setContent('<div class="gpop"><b>'+esc(w.title||"")+'</b><br><span style="color:#8d9aa0">'+esc([w.country,w.region].filter(Boolean).join("・"))+'</span></div>'); wishInfo.open(wishMap,m); });
+      wishPins.push(m); bounds.extend({lat:w.lat,lng:w.lng});
+    });
+    if(window.markerClusterer&&window.markerClusterer.MarkerClusterer){ wishCluster=new markerClusterer.MarkerClusterer({map:wishMap,markers:wishPins,renderer:clusterRenderer("#e08a86")}); }
+    else { wishPins.forEach(function(m){m.setMap(wishMap);}); }
+    wishMap.fitBounds(bounds,40);
+    google.maps.event.addListenerOnce(wishMap,"idle",function(){ if(wishMap.getZoom()>9) wishMap.setZoom(9); });
+  }
   function renderWishlist(){
     var el = $("wish");
-    var header = '<div style="text-align:center;margin-bottom:14px"><button class="fab" id="addWish" style="position:static;background:var(--terra)">＋ 新增想去的地方</button></div>';
-    if(!wishlist.length){ el.innerHTML = header + emptyState("夢想清單等你們填滿","下一站想去哪裡？先寫下來，總有一天會打勾 ✓","✨"); bindAddWish(); return; }
-
+    if(!wishlist.length){ el.innerHTML='<div style="text-align:center;margin-bottom:14px"><button class="fab" id="addWish" style="position:static;background:var(--terra)">＋ 新增想去的地方</button></div>'+emptyState("夢想清單等你們填滿","下一站想去哪裡？先寫下來，總有一天會打勾 ✓","✨"); bindAddWish(); wishMap=null; return; }
+    if(!$("wishListBody")){ el.innerHTML='<div id="wishMapWrap" class="wish-map-wrap"></div><div id="wishListBody"></div>'; wishMap=null; }
+    refreshWishMap();
+    renderWishBody();
+  }
+  function renderWishBody(){
+    var wb=$("wishListBody"); if(!wb) return;
+    var header = '<div style="text-align:center;margin:6px 0 14px"><button class="fab" id="addWish" style="position:static;background:var(--terra)">＋ 新增想去的地方</button></div>';
     var search='<input type="text" id="wishSearch" class="wish-search" placeholder="🔍 搜尋想去的地方…" value="'+esc(wishQuery)+'">';
     var q=wishQuery.trim().toLowerCase();
     var list=wishlist.filter(function(w){ if(!q) return true; return ((w.title||"")+" "+(w.region||"")+" "+(w.country||"")+" "+(w.note||"")).toLowerCase().indexOf(q)>=0; });
@@ -1146,12 +1194,12 @@
         }).join("")+'</div></div>';
     }).join("") : '<div class="geo-msg" style="text-align:center;padding:20px">找不到符合「'+esc(wishQuery)+'」的地方 🔍</div>';
 
-    el.innerHTML = header + search + chips + body;
+    wb.innerHTML = header + search + chips + body;
     bindAddWish();
-    var si=$("wishSearch"); if(si){ si.addEventListener("input",function(){ wishQuery=si.value; renderWishlist(); }); if(q){ si.focus(); var v=si.value; si.value=""; si.value=v; } }
-    el.querySelectorAll("[data-f]").forEach(function(c){ c.addEventListener("click",function(){ wishFilter=c.getAttribute("data-f"); renderWishlist(); }); });
-    el.querySelectorAll("[data-toggle]").forEach(function(h){ h.addEventListener("click",function(){ var c=h.getAttribute("data-toggle"); collapsedCountries[c]=!collapsedCountries[c]; h.parentNode.classList.toggle("collapsed"); }); });
-    el.querySelectorAll("[data-delw]").forEach(function(b){b.addEventListener("click",function(e){e.stopPropagation();delWish(b.getAttribute("data-delw"));});});
+    var si=$("wishSearch"); if(si){ si.addEventListener("input",function(){ wishQuery=si.value; renderWishBody(); }); if(q){ si.focus(); var v=si.value; si.value=""; si.value=v; } }
+    wb.querySelectorAll("[data-f]").forEach(function(c){ c.addEventListener("click",function(){ wishFilter=c.getAttribute("data-f"); renderWishBody(); }); });
+    wb.querySelectorAll("[data-toggle]").forEach(function(h){ h.addEventListener("click",function(){ var c=h.getAttribute("data-toggle"); collapsedCountries[c]=!collapsedCountries[c]; h.parentNode.classList.toggle("collapsed"); }); });
+    wb.querySelectorAll("[data-delw]").forEach(function(b){b.addEventListener("click",function(e){e.stopPropagation();delWish(b.getAttribute("data-delw"));});});
   }
   var wishFilter="全部", collapsedCountries={}, wishQuery="";
   function flag(c){
@@ -1179,49 +1227,57 @@
     trips.forEach(function(t){ t.stops.forEach(function(s){ if(s.lat!=null){ out.push({trip:t.name, day:s.dayN, name:s.region||s.name, lat:s.lat, lng:s.lng}); } }); });
     return out;
   }
-  var mapCluster=null, mapLine=null;
+  var mapCluster=null, mapLines=[];
   function refreshMap(){
     if(!mapMain) return;
     if(mapCluster){ try{mapCluster.clearMarkers();}catch(e){} mapCluster=null; }
     if(mapMain.__pins){ mapMain.__pins.forEach(function(m){m.setMap(null);}); }
     mapMain.__pins=[];
-    if(mapLine){ mapLine.setMap(null); mapLine=null; }
+    if(mapLines){ mapLines.forEach(function(l){l.setMap(null);}); }
+    mapLines=[];
     var bounds=new google.maps.LatLngBounds(); var any=false;
-    var markers=[], datedPts=[];
-    function addPin(lat,lng,html,date){
+    var markers=[], segs={};
+    var ROUTE_COLORS=["#5f9bb0","#e08a86","#7fae8b","#e3b667","#9d8bb8","#d98fae","#6bb2a0"];
+    function addPin(lat,lng,html,segKey,ord){
       var m=new google.maps.Marker({position:{lat:lat,lng:lng}, icon:pinSymbol()});
       m.addListener("click",function(){ mapInfo.setContent('<div class="gpop">'+html+'</div>'); mapInfo.open(mapMain,m); });
       markers.push(m); bounds.extend({lat:lat,lng:lng}); any=true;
-      if(date) datedPts.push({date:date, lat:lat, lng:lng});
+      if(segKey){ (segs[segKey]=segs[segKey]||[]).push({lat:lat,lng:lng,ord:ord}); }
     }
-    // 足跡點(完成旅程加入的)
-    footprints.forEach(function(f){
+    // 足跡點（依「旅程＋日期」分段畫線）
+    footprints.forEach(function(f,i){
       if(f.lat==null) return;
+      var key = f.date ? ((f.fromTrip||"trip")+"|"+f.date) : "";
       addPin(f.lat,f.lng, '<b>'+esc(f.title||"")+'</b><br><span style="color:#8d9aa0">'+esc(f.place||"")+(f.place&&f.date?' · ':'')+fmtDate(f.date)+'</span><br>'+
         '<button class="pp-btn add" onclick="__fpToMem(\''+f.id+'\')">＋ 補上回憶</button> '+
-        '<button class="pp-btn del" onclick="__fpDel(\''+f.id+'\')">刪除</button>', f.date);
+        '<button class="pp-btn del" onclick="__fpDel(\''+f.id+'\')">刪除</button>', key, i);
     });
-    // 有定位的回憶
-    entries.filter(function(e){return e.lat!=null;}).forEach(function(e){
-      addPin(e.lat,e.lng, '<b>'+esc(e.title||"")+'</b><br>'+esc(e.place||"")+'<br><span style="color:#5f9bb0">'+fmtDate(e.date)+'</span>', e.date);
+    // 有定位的回憶（依日期分段）
+    entries.filter(function(e){return e.lat!=null;}).forEach(function(e,i){
+      var key = e.date ? ("mem|"+e.date) : "";
+      addPin(e.lat,e.lng, '<b>'+esc(e.title||"")+'</b><br>'+esc(e.place||"")+'<br><span style="color:#5f9bb0">'+fmtDate(e.date)+'</span>', key, i);
     });
-    // 旅行路線：依日期把走過的點連起來（虛線）
-    var ordered=datedPts.slice().sort(function(a,b){return (a.date||"").localeCompare(b.date||"");});
-    if(ordered.length>=2){
-      mapLine=new google.maps.Polyline({
-        path:ordered.map(function(p){return {lat:p.lat,lng:p.lng};}),
+    // 每個「旅程+天」各一條線、不同顏色
+    var ci=0;
+    Object.keys(segs).sort().forEach(function(key){
+      var pts=segs[key].sort(function(a,b){return a.ord-b.ord;});
+      if(pts.length<2) return;
+      var col=ROUTE_COLORS[ci%ROUTE_COLORS.length]; ci++;
+      mapLines.push(new google.maps.Polyline({
+        path:pts.map(function(p){return {lat:p.lat,lng:p.lng};}),
         geodesic:true, strokeOpacity:0,
-        icons:[{ icon:{path:"M 0,-1 0,1", strokeColor:"#5f9bb0", strokeOpacity:.75, scale:3}, offset:"0", repeat:"13px" }],
+        icons:[{ icon:{path:"M 0,-1 0,1", strokeColor:col, strokeOpacity:.85, scale:3}, offset:"0", repeat:"12px" }],
         map:mapMain
-      });
-    }
-    // 聚合：點太密自動合併成數字泡泡
+      }));
+    });
+    // 聚合：柔和圓泡＋數字
     if(window.markerClusterer && window.markerClusterer.MarkerClusterer && markers.length){
-      mapCluster=new markerClusterer.MarkerClusterer({map:mapMain, markers:markers});
+      mapCluster=new markerClusterer.MarkerClusterer({map:mapMain, markers:markers, renderer:clusterRenderer("#5f9bb0")});
     } else {
       markers.forEach(function(m){m.setMap(mapMain);});
     }
     mapMain.__pins=markers;
+    if(meMarker) meMarker.setMap(mapMain);
     if(any){
       mapMain.fitBounds(bounds,45);
       google.maps.event.addListenerOnce(mapMain,"idle",function(){ if(mapMain.getZoom()>9) mapMain.setZoom(9); });
@@ -1230,8 +1286,25 @@
     if(!total){
       $("placeList").innerHTML='<div class="geo-msg" style="text-align:center;width:100%">還沒有走過的點 — 旅程完成後按「✓ 我們完成這趟旅行了」，或新增有定位的回憶，足跡就會冒出來 👣</div>';
     } else {
-      $("placeList").innerHTML='<div class="geo-msg" style="width:100%">點地圖上的圖釘看資訊・虛線是你們的旅行路線 · 共 '+total+' 個足跡 👣</div>';
+      $("placeList").innerHTML='<div class="geo-msg" style="width:100%">彩色虛線＝各天的路線・點圖釘看資訊 · 共 '+total+' 個足跡 👣</div>';
     }
+  }
+  var meMarker=null;
+  function locateMe(){
+    if(!navigator.geolocation){ toast("這個裝置不支援定位 🙏"); return; }
+    toast("定位中…📍");
+    navigator.geolocation.getCurrentPosition(function(pos){
+      var ll={lat:pos.coords.latitude, lng:pos.coords.longitude};
+      if(!mapMain){ initMainMap(); }
+      if(meMarker) meMarker.setMap(null);
+      meMarker=new google.maps.Marker({ position:ll, map:mapMain, zIndex:9999,
+        icon:{ path:google.maps.SymbolPath.CIRCLE, scale:7, fillColor:"#4285F4", fillOpacity:1, strokeColor:"#fff", strokeWeight:3 },
+        title:"我現在的位置" });
+      if(mapMain){ mapMain.setCenter(ll); mapMain.setZoom(13); }
+      toast("找到你了 📍");
+    }, function(err){
+      toast(err.code===1?"你拒絕了定位權限 🙏":"定位失敗，請確認已開啟定位");
+    }, {enableHighAccuracy:true, timeout:10000});
   }
   function initPickMap(){
     if(!window.gmReady){ pendingPick=true; return; }
@@ -1259,6 +1332,7 @@
     if(pendingMain){ pendingMain=false; initMainMap(); }
     if(pendingPick){ pendingPick=false; initPickMap(); }
     if($("wishOverlay") && $("wishOverlay").classList.contains("show")) initWishAutocomplete();
+    refreshWishMap();
   };
 
   /* ---------- tabs ---------- */
@@ -1317,10 +1391,24 @@
   $("etSave").addEventListener("click",async function(){
     var t=curTrip(); if(!t||!editingTimeId){ $("timeOverlay").classList.remove("show"); return; }
     var s=t.stops.find(function(x){return x.id===editingTimeId;});
-    if(s){ s.time=$("etStart").value.trim(); s.endTime=$("etEnd").value.trim(); await saveTrips(); renderTrips(); refreshMap(); }
+    if(s){
+      var oldStart=toMin(s.time), newStartStr=$("etStart").value.trim(), newStart=toMin(newStartStr);
+      var shift = $("etShift").checked && oldStart!=null && newStart!=null ? (newStart-oldStart) : 0;
+      s.time=newStartStr; s.endTime=$("etEnd").value.trim();
+      if(shift!==0){
+        var seq=daySorted(t,s.dayN), idx=seq.findIndex(function(x){return x.id===s.id;});
+        for(var k=idx+1;k<seq.length;k++){
+          var st=seq[k];
+          if(toMin(st.time)!=null) st.time=toHM(toMin(st.time)+shift);
+          if(toMin(st.endTime)!=null) st.endTime=toHM(toMin(st.endTime)+shift);
+        }
+      }
+      await saveTrips(); renderTrips(); refreshMap();
+    }
     editingTimeId=null; $("timeOverlay").classList.remove("show");
   });
   $("timeOverlay").addEventListener("click",function(ev){ if(ev.target===this){ editingTimeId=null; this.classList.remove("show"); } });
+  if($("locateBtn")) $("locateBtn").addEventListener("click",locateMe);
   $("stopCancel").addEventListener("click",function(){ editingStopId=null; $("stopOverlay").classList.remove("show"); });
   $("stopSave").addEventListener("click",async function(){
     var nm=$("stopName").value.trim(); if(!nm){$("stopName").focus();return;}
@@ -1349,6 +1437,7 @@
       var id=t.getAttribute("data-tab");
       $(id==="map"?"map-panel":id).classList.add("active");
       if(id==="map"){ initMainMap(); setTimeout(function(){ if(mapMain){ google.maps.event.trigger(mapMain,"resize"); refreshMap(); } },180); }
+      if(id==="wish"){ setTimeout(function(){ refreshWishMap(); },180); }
     });
   });
 
